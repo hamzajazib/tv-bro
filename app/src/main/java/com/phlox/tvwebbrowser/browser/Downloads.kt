@@ -17,6 +17,11 @@ fun DownloadRequest.toDownload(): Download {
             (url.startsWith("http://", ignoreCase = true) || url.startsWith("https://", ignoreCase = true))
         it.etag = etag
         it.lastModified = lastModified
+        streamSpec?.let { spec ->
+            it.streamSpec = spec.toJson()
+            //its segments are kept while it is paused
+            it.resumable = true
+        }
     }
 }
 

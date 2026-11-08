@@ -17,7 +17,8 @@ class DownloadRowText(private val context: Context) {
     private val separator = " · "
 
     /**
-     * - in progress: "18.6 MB of 48.2 MB · 2.4 MB/s · 12 s left";
+     * - in progress: "18.6 MB of 48.2 MB · 2.4 MB/s · 12 s left" ("Saving the video" while a stream is packed into
+     *   its file);
      * - paused: "Paused · 0.7 GB of 6.0 GB" ("Paused: connection lost · ..." when it was not the user);
      * - complete: "601 KB · 15:18 · site.com";
      * - failed: "Failed: connection lost · 11:02 · site.com", cancelled: "Cancelled · 18:44 · site.com".
@@ -27,7 +28,10 @@ class DownloadRowText(private val context: Context) {
     fun caption(item: DownloadItem, withHost: Boolean, withDay: Boolean, now: Long = System.currentTimeMillis()): String {
         val parts = ArrayList<String>()
         when (item.status) {
-            Download.Status.IN_PROGRESS -> {
+            //a stream is packed into its file when all its segments are there
+            Download.Status.IN_PROGRESS -> if (item.isStream && item.size > 0 && item.bytesReceived >= item.size) {
+                parts += context.getString(R.string.download_saving_video)
+            } else {
                 parts += progress(item)
                 if (item.bytesPerSecond > 0) {
                     parts += context.getString(R.string.download_speed, size(item.bytesPerSecond))
@@ -55,10 +59,15 @@ class DownloadRowText(private val context: Context) {
         return parts.joinToString(separator)
     }
 
-    /** "18.6 MB of 48.2 MB", or what came for an unknown size */
-    private fun progress(item: DownloadItem): String =
-        if (item.size > 0) context.getString(R.string.downloaded_of, size(item.bytesReceived), size(item.size))
-        else size(item.bytesReceived)
+    /**
+     * "18.6 MB of 48.2 MB", or what came for an unknown size; "18.6 MB of about 1.2 GB" for a stream, whose size is
+     * estimated
+     */
+    private fun progress(item: DownloadItem): String = when {
+        item.size <= 0 -> size(item.bytesReceived)
+        item.isStream -> context.getString(R.string.downloaded_of_about, size(item.bytesReceived), size(item.size))
+        else -> context.getString(R.string.downloaded_of, size(item.bytesReceived), size(item.size))
+    }
 
     fun size(bytes: Long): String = Formatter.formatShortFileSize(context, bytes)
 
@@ -85,6 +94,9 @@ class DownloadRowText(private val context: Context) {
         Download.Error.CONNECTION -> context.getString(R.string.download_error_connection)
         Download.Error.STORAGE -> context.getString(R.string.download_error_storage)
         Download.Error.TIMEOUT -> context.getString(R.string.download_error_timeout)
+        Download.Error.LIVE -> context.getString(R.string.download_error_live)
+        Download.Error.PROTECTED -> context.getString(R.string.download_error_protected)
+        Download.Error.FORMAT -> context.getString(R.string.download_error_format)
         else -> error
     }
 

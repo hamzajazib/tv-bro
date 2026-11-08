@@ -15,7 +15,7 @@
     "licenseFile": "apache-2.0.txt",
     "copyright": "Copyright The Android Open Source Project",
     "url": "https://github.com/androidx/media",
-    "note": "The built-in video player."
+    "note": "The built-in video player, and the saving of video streams as MP4 files."
   },
   {
     "id": "guava",

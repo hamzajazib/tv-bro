@@ -1,8 +1,13 @@
 package com.phlox.tvwebbrowser.activity.main
 
+import android.content.Context
 import android.net.Uri
 import android.text.format.DateUtils
+import android.text.format.Formatter
+import com.phlox.tvwebbrowser.R
+import com.phlox.tvwebbrowser.browser.StreamDownloads
 import com.phlox.tvwebbrowser.webengine.PageVideo
+import java.util.Locale
 
 /**
  * The caption of a row of the videos of the page: the kind, the server, the size and the duration (in whole seconds
@@ -30,6 +35,18 @@ object PageVideoRowText {
 
     /** The caption under the title of the player of the page: its name ([player]) and the [site], "Site player · example.com" */
     fun sitePlayerCaption(player: String, site: String?): String = listOfNotNull(player, site?.ifEmpty { null }).joinToString(" · ")
+
+    /** A quality of a stream to download: "1080p · about 1.2 GB", "2.5 Mbps" */
+    fun downloadOption(context: Context, option: StreamDownloads.Option): String {
+        val quality = when {
+            option.height > 0 -> "${option.height}p"
+            option.bitrate > 0 -> String.format(Locale.ROOT, "%.1f Mbps", option.bitrate / 1_000_000.0)
+            else -> "?"
+        }
+        val size = option.spec.estimatedSize
+        return if (size > 0) context.getString(R.string.stream_quality_size, quality, Formatter.formatShortFileSize(context, size))
+            else quality
+    }
 
     /** The name of the file of a stream, as "index.m3u8" (its server if the address has no path) */
     fun fileName(video: PageVideo): String {

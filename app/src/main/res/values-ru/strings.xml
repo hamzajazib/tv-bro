@@ -295,6 +295,14 @@
   <string name="download_error_connection">соединение потеряно</string>
   <string name="download_error_storage">не удаётся записать файл</string>
   <string name="download_error_timeout">слишком долго</string>
+  <string name="download_error_live">у прямой трансляции нет конца</string>
+  <string name="download_error_protected">видео защищено</string>
+  <string name="download_error_format">этот формат видео не поддерживается</string>
+  <string name="download_saving_video">Сохранение видео</string>
+  <string name="downloaded_of_about">%1$s из примерно %2$s</string>
+  <string name="stream_download_failed">Не удаётся сохранить видео: %1$s</string>
+  <string name="stream_download_quality">Качество для скачивания</string>
+  <string name="stream_quality_size">%1$s · примерно %2$s</string>
   <string name="time_left_seconds">Осталось %d с</string>
   <string name="time_left_minutes">Осталось %d мин</string>
   <string name="time_left_hours">Осталось %1$d ч %2$d мин</string>

@@ -40,6 +40,12 @@ class Download() {
     /** The server accepts byte ranges, so the download can be paused and resumed */
     @ColumnInfo(defaultValue = "0")
     var resumable: Boolean = false
+    /**
+     * The video stream the download saves as one file ([StreamSpec.toJson]); null for a file downloaded as it is.
+     * Its [url] is the address of the playlist of the stream.
+     */
+    @ColumnInfo(name = "stream")
+    var streamSpec: String? = null
 
     //non-db fields
     @Ignore
@@ -75,6 +81,12 @@ class Download() {
         const val STORAGE = "storage"
         /** The system stopped the download service, it runs too long */
         const val TIMEOUT = "timeout"
+        /** A live stream has no end to save */
+        const val LIVE = "live"
+        /** The stream is protected (DRM) */
+        const val PROTECTED = "protected"
+        /** The stream has a format the file can not hold (a codec, a container) */
+        const val FORMAT = "format"
 
         fun http(code: Int) = "HTTP $code"
     }

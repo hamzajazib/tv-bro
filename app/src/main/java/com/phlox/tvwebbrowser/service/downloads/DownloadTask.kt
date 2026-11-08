@@ -33,7 +33,7 @@ import java.net.HttpURLConnection
  * A new file goes to the [folder] the user chose ([DownloadFolder]), or to the public Downloads directory when
  * there is none or it can not be written.
  */
-abstract class DownloadTask(val download: Download, private val listener: Listener, private val folder: Uri?) : Runnable {
+abstract class DownloadTask(val download: Download, private val listener: Listener, protected val folder: Uri?) : Runnable {
     companion object {
         val TAG: String = DownloadTask::class.java.simpleName
         private const val BUFFER_SIZE = 64 * 1024
@@ -67,7 +67,7 @@ abstract class DownloadTask(val download: Download, private val listener: Listen
         if (stopRequest == Stop.NONE) stopRequest = reason
     }
 
-    private val repository get() = TVBro.container.data.downloads
+    protected val repository get() = TVBro.container.data.downloads
 
     /** Opens the input, filling what the response tells about the file (its size, name, type) */
     protected abstract fun openInput(): InputStream
@@ -80,26 +80,39 @@ abstract class DownloadTask(val download: Download, private val listener: Listen
 
     protected open fun closeInput() {}
 
+    /** The output [transfer] opened, closed by [run] */
+    protected var output: OutputStream? = null
+
+    /**
+     * Writes the file: by default copies the input to it. Throws [StorageException] when the file can not be
+     * written, [HttpException] and other [IOException]s for the input.
+     */
+    protected open fun transfer() {
+        openInput().use { input ->
+            output = try {
+                if (download.filepath.isEmpty()) openOutput(download, folder) else reopenOutput(download, startOffset)
+            } catch (e: Exception) {
+                throw StorageException(e)
+            }
+            download.bytesReceived = startOffset
+            runBlocking { repository.update(download) }
+            copy(input, output!!)
+        }
+        if (stopRequest == Stop.NONE) checkInputComplete()
+    }
+
     override fun run() {
         var error: String? = null
-        var output: OutputStream? = null
         try {
-            openInput().use { input ->
-                output = try {
-                    if (download.filepath.isEmpty()) openOutput(download, folder) else reopenOutput(download, startOffset)
-                } catch (e: Exception) {
-                    throw StorageException(e)
-                }
-                download.bytesReceived = startOffset
-                runBlocking { repository.update(download) }
-                copy(input, output!!)
-            }
-            if (stopRequest == Stop.NONE) checkInputComplete()
+            transfer()
         } catch (e: HttpException) {
             error = Download.Error.http(e.code)
         } catch (e: StorageException) {
             Log.e(TAG, "Can not write ${download.filename}", e)
             error = Download.Error.STORAGE
+        } catch (e: DownloadErrorException) {
+            Log.w(TAG, "Download of ${download.url} failed: ${e.error}", e)
+            error = e.error
         } catch (e: IOException) {
             Log.w(TAG, "Download of ${download.url} failed", e)
             error = Download.Error.CONNECTION
@@ -117,9 +130,21 @@ abstract class DownloadTask(val download: Download, private val listener: Listen
         finish(error)
     }
 
+    /** Writes the progress to the database (and tells the listener) when the last write is [PROGRESS_INTERVAL] old */
+    protected fun reportProgress(force: Boolean = false) {
+        val now = System.currentTimeMillis()
+        if (force || now - lastProgressTime >= PROGRESS_INTERVAL) {
+            lastProgressTime = now
+            runBlocking { repository.updateProgress(download.id, download.bytesReceived, download.size) }
+            listener.onProgress(this)
+        }
+    }
+
+    private var lastProgressTime = 0L
+
     private fun copy(input: InputStream, output: OutputStream) {
         val buffer = ByteArray(BUFFER_SIZE)
-        var lastProgressTime = System.currentTimeMillis()
+        lastProgressTime = System.currentTimeMillis()
         while (stopRequest == Stop.NONE) {
             val count = input.read(buffer)
             if (count == -1) break
@@ -129,12 +154,7 @@ abstract class DownloadTask(val download: Download, private val listener: Listen
                 throw StorageException(e)
             }
             download.bytesReceived += count
-            val now = System.currentTimeMillis()
-            if (now - lastProgressTime >= PROGRESS_INTERVAL) {
-                lastProgressTime = now
-                runBlocking { repository.updateProgress(download.id, download.bytesReceived, download.size) }
-                listener.onProgress(this)
-            }
+            reportProgress()
         }
     }
 
@@ -215,7 +235,11 @@ class StreamDownloadTask(download: Download, private val pipe: ParcelFileDescrip
     }
 }
 
-private class StorageException(cause: Throwable) : IOException(cause)
+/** The file of the download can not be written */
+class StorageException(cause: Throwable) : IOException(cause)
+
+/** The download fails for the [error] given (one of [Download.Error]) */
+class DownloadErrorException(val error: String, message: String? = null) : IOException(message ?: error)
 
 
 /**
@@ -223,7 +247,7 @@ private class StorageException(cause: Throwable) : IOException(cause)
  * MediaStore Downloads on Android 11+ (other apps see it when it is complete), a file with a free name in the
  * public Downloads directory before.
  */
-private fun openOutput(download: Download, folder: Uri?): OutputStream {
+internal fun openOutput(download: Download, folder: Uri?): FileOutputStream {
     val context = AppContext.get()
     if (folder != null) {
         try {
@@ -270,7 +294,7 @@ private fun openOutput(download: Download, folder: Uri?): OutputStream {
  * Creates the file in the folder of the Storage Access Framework. A provider that can not open it to read and
  * write, or gives no seekable file (a pipe), can not continue the file later: the download is then not resumable.
  */
-private fun openDocumentOutput(download: Download, folder: Uri): OutputStream {
+private fun openDocumentOutput(download: Download, folder: Uri): FileOutputStream {
     val context = AppContext.get()
     val uri = DownloadFolder.createFile(context, folder, download.filename, download.mimeType)
     download.filepath = uri.toString()

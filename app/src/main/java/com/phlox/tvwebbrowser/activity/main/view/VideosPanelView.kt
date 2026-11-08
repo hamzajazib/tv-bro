@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.phlox.tvwebbrowser.R
+import com.phlox.tvwebbrowser.browser.StreamDownloads
 import com.phlox.tvwebbrowser.activity.main.PageVideoRowText
 import com.phlox.tvwebbrowser.databinding.ViewPageVideoRowBinding
 import com.phlox.tvwebbrowser.databinding.ViewPageVideosPanelBinding
@@ -35,7 +36,10 @@ class VideosPanelView @JvmOverloads constructor(
         fun play(video: PageVideo)
         fun openInOtherApp(video: PageVideo)
         fun copyLink(video: PageVideo)
-        /** Only files: streams are no files to download */
+        /**
+         * Downloads a file, or saves an HLS stream as a file ([StreamDownloads.isDownloadable]); the qualities of a
+         * stream may come back to [showDownloadChoices]
+         */
         fun download(video: PageVideo)
     }
 
@@ -119,10 +123,20 @@ class VideosPanelView @JvmOverloads constructor(
             PopupMenuView.Item(R.drawable.ic_play, context.getString(R.string.play_in_built_in_player)) { callback.play(video) },
             PopupMenuView.Item(R.drawable.ic_open_in_new, context.getString(R.string.open_in_external_application)) { callback.openInOtherApp(video) },
             PopupMenuView.Item(R.drawable.ic_link, context.getString(R.string.copy_link)) { callback.copyLink(video) })
-        if (video.kind == PageVideo.Kind.FILE) {
+        if (video.kind == PageVideo.Kind.FILE || StreamDownloads.isDownloadable(video)) {
             items += PopupMenuView.Item(R.drawable.ic_downloads, context.getString(R.string.download)) { callback.download(video) }
         }
         menu.show(anchor, items, alignEnd = true)
+    }
+
+    /** The qualities of the stream of [video] to download (the best first), from its row; nothing if it is gone */
+    fun showDownloadChoices(video: PageVideo, options: List<StreamDownloads.Option>, choose: (StreamDownloads.Option) -> Unit) {
+        if (!isOpen) return
+        val position = adapter.currentList.indexOfFirst { it.video.url == video.url }
+        val holder = vb.rvItems.findViewHolderForAdapterPosition(position) as? Holder ?: return
+        menu.show(holder.vb.ibOptions, options.map { option ->
+            PopupMenuView.Item(R.drawable.ic_downloads, PageVideoRowText.downloadOption(context, option)) { choose(option) }
+        }, alignEnd = true)
     }
 
     /** A row: the video, and whether the page plays it now */

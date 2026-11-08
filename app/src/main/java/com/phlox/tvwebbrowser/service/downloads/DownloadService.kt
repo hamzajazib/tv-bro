@@ -29,7 +29,9 @@ import com.phlox.tvwebbrowser.channels.ChannelKind
 import com.phlox.tvwebbrowser.channels.HomeChannels
 import com.phlox.tvwebbrowser.model.Download
 import com.phlox.tvwebbrowser.net.ProxySettings
+import com.phlox.tvwebbrowser.service.downloads.stream.HlsDownloadTask
 import com.phlox.tvwebbrowser.utils.DownloadFileActions
+import com.phlox.tvwebbrowser.utils.StreamWorkDir
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -102,6 +104,10 @@ class DownloadService : Service() {
                 interrupted.forEach { DownloadFileActions.deleteFile(this@DownloadService, it) }
             }
             repository.markInterrupted(startTime, Download.Error.INTERRUPTED)
+            //the segments of stream downloads that ended while the process was dying
+            val unfinished = (repository.withStatus(Download.Status.IN_PROGRESS) +
+                repository.withStatus(Download.Status.PAUSED)).map { it.id }.toSet()
+            withContext(Dispatchers.IO) { StreamWorkDir.deleteOthers(this@DownloadService, unfinished) }
         }
     }
 
@@ -194,8 +200,11 @@ class DownloadService : Service() {
                 download.refererHeader = referer
                 if (install) download.operationAfterDownload = Download.OperationAfterDownload.INSTALL
                 Log.d(TAG, "Start to download ${download.url}")
-                task = if (stream != null) StreamDownloadTask(download, stream, taskListener, folder)
-                    else HttpDownloadTask(download, taskListener, folder, proxy = proxy)
+                task = when {
+                    stream != null -> StreamDownloadTask(download, stream, taskListener, folder)
+                    download.streamSpec != null -> HlsDownloadTask(download, taskListener, folder, proxy)
+                    else -> HttpDownloadTask(download, taskListener, folder, proxy = proxy)
+                }
                 tasks[id] = task
                 if (cancelledBeforeStart.remove(id)) task.stop(DownloadTask.Stop.CANCEL)
                 executor.execute(task)
@@ -229,7 +238,9 @@ class DownloadService : Service() {
                 download.cookies = cookies
                 download.refererHeader = referer
                 Log.d(TAG, "Resume to download ${download.url} from ${download.bytesReceived}")
-                val task = HttpDownloadTask(download, taskListener, folder, resume = true, proxy = proxy)
+                //a stream goes on with the segments it does not have yet
+                val task = if (download.streamSpec != null) HlsDownloadTask(download, taskListener, folder, proxy)
+                    else HttpDownloadTask(download, taskListener, folder, resume = true, proxy = proxy)
                 tasks[id] = task
                 started = true
                 if (cancelledBeforeStart.remove(id)) task.stop(DownloadTask.Stop.CANCEL)

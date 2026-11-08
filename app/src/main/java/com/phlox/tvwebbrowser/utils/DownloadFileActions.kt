@@ -42,7 +42,11 @@ object DownloadFileActions {
     }
 
     /** Deletes the file of the download, if it is still there. Blocking */
-    fun deleteFile(context: Context, download: Download) = DownloadFiles.delete(context, download.filepath)
+    fun deleteFile(context: Context, download: Download) {
+        DownloadFiles.delete(context, download.filepath)
+        //the segments a stream download kept
+        StreamWorkDir.delete(context, download.id)
+    }
 
     /** Some app other than the stubs of Android TV takes the [intent] */
     fun hasApp(context: Context, intent: Intent): Boolean =

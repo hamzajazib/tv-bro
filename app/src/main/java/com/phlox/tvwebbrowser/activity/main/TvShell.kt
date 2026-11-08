@@ -46,6 +46,7 @@ import com.phlox.tvwebbrowser.activity.main.view.tabs.TabsAdapter.Listener
 import com.phlox.tvwebbrowser.browser.BrowserUiEvent
 import com.phlox.tvwebbrowser.browser.DownloadEvent
 import com.phlox.tvwebbrowser.browser.DownloadsModel
+import com.phlox.tvwebbrowser.browser.StreamDownloads
 import com.phlox.tvwebbrowser.browser.CurrentTabState
 import com.phlox.tvwebbrowser.databinding.ActivityMainBinding
 import com.phlox.tvwebbrowser.model.BrowserTab
@@ -277,12 +278,40 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
 
         override fun copyLink(video: PageVideo) = host.copyToClipboard(video.url)
 
-        override fun download(video: PageVideo) = downloadVideo(video)
+        override fun download(video: PageVideo) = downloadVideo(video) { options ->
+            vb.vVideosPanel.showDownloadChoices(video, options) { startStreamDownload(video, it) }
+        }
     }
 
-    private fun downloadVideo(video: PageVideo) {
+    /** Reading the playlists of a stream to download */
+    private var streamLookup: Job? = null
+
+    /**
+     * Downloads a file as it is; for a stream, reads its qualities first: one is downloaded at once, more are
+     * offered by [choose], a stream that can not be saved is explained in a toast
+     */
+    private fun downloadVideo(video: PageVideo, choose: (List<StreamDownloads.Option>) -> Unit) {
         val cookies = controller.currentTab.value?.webEngine?.getCookies(video.url)
-        host.download(DownloadRequest.forLink(video.url, video.pageUrl ?: "", video.userAgent, cookies))
+        if (!StreamDownloads.isDownloadable(video)) {
+            host.download(DownloadRequest.forLink(video.url, video.pageUrl ?: "", video.userAgent, cookies))
+            return
+        }
+        if (streamLookup?.isActive == true) return
+        streamLookup = lifecycleScope.launch {
+            when (val result = StreamDownloads.options(video, cookies)) {
+                is StreamDownloads.Result.Refused ->
+                    showMessage(R.drawable.ic_downloads, activity.getString(R.string.stream_download_failed,
+                        DownloadRowText(activity).reason(result.error)))
+                is StreamDownloads.Result.Options ->
+                    if (result.options.size == 1) startStreamDownload(video, result.options.single()) else choose(result.options)
+            }
+        }
+    }
+
+    private fun startStreamDownload(video: PageVideo, option: StreamDownloads.Option) {
+        val cookies = controller.currentTab.value?.webEngine?.getCookies(video.url)
+        val title = video.title?.takeIf { it.isNotBlank() } ?: controller.currentTab.value?.title
+        host.download(StreamDownloads.request(video, option, title, cookies))
     }
 
     /** In a player app chosen in the dialog of Android; @return false if there is none (the user is told) */
@@ -339,7 +368,9 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
 
         override fun openInOtherApp(video: PageVideo): Boolean = this@TvShell.openInOtherApp(video)
 
-        override fun download(video: PageVideo) = downloadVideo(video)
+        override fun download(video: PageVideo) = downloadVideo(video) { options ->
+            vb.vPlayerScreen.showDownloadChoices(video, options) { startStreamDownload(video, it) }
+        }
 
         override fun onClosed(exit: PlayerScreenView.Exit, position: Double?) {
             //the activity ends, or the player of the picture-in-picture window takes the place of this one

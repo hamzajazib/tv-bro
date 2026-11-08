@@ -19,6 +19,7 @@ import androidx.media3.common.C
 import androidx.media3.common.PlaybackException
 import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.R
+import com.phlox.tvwebbrowser.browser.StreamDownloads
 import com.phlox.tvwebbrowser.activity.main.PageVideoRowText
 import com.phlox.tvwebbrowser.activity.main.VideoModeController
 import com.phlox.tvwebbrowser.databinding.ViewPlayerScreenBinding
@@ -64,7 +65,10 @@ class PlayerScreenView @JvmOverloads constructor(
         fun cookies(url: String): String?
         /** Opens the video in another app; false if there is none */
         fun openInOtherApp(video: PageVideo): Boolean
-        /** Downloads the video, a file ([PageVideo.Kind.FILE]: streams are no files to download) */
+        /**
+         * Downloads the video, a file or an HLS stream saved as one ([StreamDownloads.isDownloadable]); the qualities of
+         * a stream may come back to [showDownloadChoices]
+         */
         fun download(video: PageVideo)
         /**
          * The player closed ([exit]); [position] is where it was, in seconds, when it played the video of the page
@@ -505,14 +509,32 @@ class PlayerScreenView @JvmOverloads constructor(
             dividerBefore = site == null) {
             if (callback.openInOtherApp(state.video)) close(Exit.ELSEWHERE)
         }
-        //the player plays on while the file downloads
-        if (state.video.kind == PageVideo.Kind.FILE) {
+        //the player plays on while the file downloads; a live or protected stream has nothing to save
+        if (state.video.kind == PageVideo.Kind.FILE ||
+            (StreamDownloads.isDownloadable(state.video) && !state.media.live && !state.media.drm)) {
             rows += PlayerPanelView.Row(R.drawable.ic_downloads, context.getString(R.string.download)) {
                 callback.download(state.video)
             }
         }
         return PlayerPanelView.Page(context.getString(R.string.player_menu_hint), caption(state.video, state.videoHeight, null),
             rows, context.getString(R.string.player_panel_close), focus.coerceIn(0, rows.lastIndex))
+    }
+
+    /**
+     * The qualities of the stream to download, over the video settings; the one that plays is checked. Nothing when
+     * the settings closed or another video plays meanwhile.
+     */
+    fun showDownloadChoices(video: PageVideo, options: List<StreamDownloads.Option>, choose: (StreamDownloads.Option) -> Unit) {
+        val state = player.state.value ?: return
+        if (!vb.vPanel.isOpen || state.video.url != video.url) return
+        val playing = options.indexOfFirst { it.height > 0 && it.height == state.videoHeight }
+        vb.vPanel.push(PlayerPanelView.Page(context.getString(R.string.stream_download_quality), null,
+            options.mapIndexed { i, option ->
+                PlayerPanelView.Row(R.drawable.ic_check, PageVideoRowText.downloadOption(context, option), checked = i == playing) {
+                    choose(option)
+                    vb.vPanel.back()
+                }
+            }, context.getString(R.string.player_panel_back), playing.coerceAtLeast(0)))
     }
 
     /**

@@ -295,6 +295,14 @@
   <string name="download_error_connection">utracono połączenie</string>
   <string name="download_error_storage">nie można zapisać pliku</string>
   <string name="download_error_timeout">przekroczono limit czasu</string>
+  <string name="download_error_live">transmisja na żywo nie ma końca</string>
+  <string name="download_error_protected">film jest chroniony</string>
+  <string name="download_error_format">ten format wideo nie jest obsługiwany</string>
+  <string name="download_saving_video">Zapisywanie filmu</string>
+  <string name="downloaded_of_about">%1$s z około %2$s</string>
+  <string name="stream_download_failed">Nie można zapisać filmu: %1$s</string>
+  <string name="stream_download_quality">Jakość do pobrania</string>
+  <string name="stream_quality_size">%1$s · około %2$s</string>
   <string name="time_left_seconds">Pozostało %d s</string>
   <string name="time_left_minutes">Pozostało %d min</string>
   <string name="time_left_hours">Pozostało %1$d godz. %2$d min</string>

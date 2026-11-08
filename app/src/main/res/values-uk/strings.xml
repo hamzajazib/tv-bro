@@ -295,6 +295,14 @@
   <string name="download_error_connection">з\'єднання втрачено</string>
   <string name="download_error_storage">не вдається записати файл</string>
   <string name="download_error_timeout">надто довго</string>
+  <string name="download_error_live">пряма трансляція не має кінця</string>
+  <string name="download_error_protected">відео захищене</string>
+  <string name="download_error_format">цей формат відео не підтримується</string>
+  <string name="download_saving_video">Збереження відео</string>
+  <string name="downloaded_of_about">%1$s з приблизно %2$s</string>
+  <string name="stream_download_failed">Не вдається зберегти відео: %1$s</string>
+  <string name="stream_download_quality">Якість для завантаження</string>
+  <string name="stream_quality_size">%1$s · приблизно %2$s</string>
   <string name="time_left_seconds">Залишилося %d с</string>
   <string name="time_left_minutes">Залишилося %d хв</string>
   <string name="time_left_hours">Залишилося %1$d год %2$d хв</string>

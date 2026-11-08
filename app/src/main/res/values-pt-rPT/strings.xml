@@ -288,6 +288,14 @@
     <string name="download_error_connection">ligação perdida</string>
     <string name="download_error_storage">não é possível escrever o ficheiro</string>
     <string name="download_error_timeout">demorou demasiado</string>
+    <string name="download_error_live">uma emissão em direto não tem fim</string>
+    <string name="download_error_protected">o vídeo está protegido</string>
+    <string name="download_error_format">este formato de vídeo não é suportado</string>
+    <string name="download_saving_video">A guardar o vídeo</string>
+    <string name="downloaded_of_about">%1$s de cerca de %2$s</string>
+    <string name="stream_download_failed">Não é possível guardar o vídeo: %1$s</string>
+    <string name="stream_download_quality">Qualidade a transferir</string>
+    <string name="stream_quality_size">%1$s · cerca de %2$s</string>
     <string name="time_left_seconds">Faltam %d s</string>
     <string name="time_left_minutes">Faltam %d min</string>
     <string name="time_left_hours">Faltam %1$d h %2$d min</string>

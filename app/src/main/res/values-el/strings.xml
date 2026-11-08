@@ -280,6 +280,14 @@
     <string name="download_error_connection">η σύνδεση χάθηκε</string>
     <string name="download_error_storage">δεν είναι δυνατή η εγγραφή του αρχείου</string>
     <string name="download_error_timeout">πήρε πολύ χρόνο</string>
+    <string name="download_error_live">μια ζωντανή ροή δεν έχει τέλος</string>
+    <string name="download_error_protected">το βίντεο είναι προστατευμένο</string>
+    <string name="download_error_format">αυτή η μορφή βίντεο δεν υποστηρίζεται</string>
+    <string name="download_saving_video">Αποθήκευση του βίντεο</string>
+    <string name="downloaded_of_about">%1$s από περίπου %2$s</string>
+    <string name="stream_download_failed">Δεν είναι δυνατή η αποθήκευση του βίντεο: %1$s</string>
+    <string name="stream_download_quality">Ποιότητα λήψης</string>
+    <string name="stream_quality_size">%1$s · περίπου %2$s</string>
     <string name="time_left_seconds">Απομένουν %d δευτ.</string>
     <string name="time_left_minutes">Απομένουν %d λεπτ.</string>
     <string name="time_left_hours">Απομένουν %1$d ώρ. %2$d λεπτ.</string>

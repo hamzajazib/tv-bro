@@ -2,6 +2,7 @@ package com.phlox.tvwebbrowser.webengine
 
 import android.webkit.MimeTypeMap
 import com.phlox.tvwebbrowser.model.Download
+import com.phlox.tvwebbrowser.model.StreamSpec
 import java.io.InputStream
 
 /**
@@ -27,7 +28,9 @@ data class DownloadRequest(
     /** The validators of the version of the file in the response of the engine, for resuming it */
     val etag: String? = null,
     val lastModified: String? = null,
-    val operationAfterDownload: Download.OperationAfterDownload = Download.OperationAfterDownload.NOP
+    val operationAfterDownload: Download.OperationAfterDownload = Download.OperationAfterDownload.NOP,
+    /** A video stream to save as one file ([url] is its master playlist), null for a file */
+    val streamSpec: StreamSpec? = null,
 ) {
     companion object {
         /**

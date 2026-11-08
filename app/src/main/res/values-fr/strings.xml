@@ -288,6 +288,14 @@
     <string name="download_error_connection">connexion perdue</string>
     <string name="download_error_storage">impossible d’écrire le fichier</string>
     <string name="download_error_timeout">trop long</string>
+    <string name="download_error_live">un direct n’a pas de fin</string>
+    <string name="download_error_protected">la vidéo est protégée</string>
+    <string name="download_error_format">ce format de vidéo n’est pas pris en charge</string>
+    <string name="download_saving_video">Enregistrement de la vidéo</string>
+    <string name="downloaded_of_about">%1$s sur environ %2$s</string>
+    <string name="stream_download_failed">Impossible d’enregistrer la vidéo : %1$s</string>
+    <string name="stream_download_quality">Qualité à télécharger</string>
+    <string name="stream_quality_size">%1$s · environ %2$s</string>
     <string name="time_left_seconds">%d s restantes</string>
     <string name="time_left_minutes">%d min restantes</string>
     <string name="time_left_hours">%1$d h %2$d min restantes</string>

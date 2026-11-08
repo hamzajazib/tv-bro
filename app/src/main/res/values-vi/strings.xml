@@ -271,6 +271,14 @@
   <string name="download_error_connection">mất kết nối</string>
   <string name="download_error_storage">không thể ghi tệp</string>
   <string name="download_error_timeout">mất quá nhiều thời gian</string>
+  <string name="download_error_live">phát trực tiếp không có điểm kết thúc</string>
+  <string name="download_error_protected">video được bảo vệ</string>
+  <string name="download_error_format">định dạng video này không được hỗ trợ</string>
+  <string name="download_saving_video">Đang lưu video</string>
+  <string name="downloaded_of_about">%1$s trên khoảng %2$s</string>
+  <string name="stream_download_failed">Không thể lưu video: %1$s</string>
+  <string name="stream_download_quality">Chất lượng để tải xuống</string>
+  <string name="stream_quality_size">%1$s · khoảng %2$s</string>
   <string name="time_left_seconds">Còn %d giây</string>
   <string name="time_left_minutes">Còn %d phút</string>
   <string name="time_left_hours">Còn %1$d giờ %2$d phút</string>

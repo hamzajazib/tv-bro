@@ -53,6 +53,18 @@ object DownloadFiles {
         Kind.MEDIA_STORE, Kind.DOCUMENT -> Uri.parse(filepath)
     }
 
+    /** The size of the file in bytes, -1 when it is not known. Blocking */
+    fun sizeOf(context: Context, filepath: String): Long = try {
+        when (kindOf(filepath)) {
+            null -> -1L
+            Kind.FILE -> File(filepath).length()
+            Kind.MEDIA_STORE, Kind.DOCUMENT ->
+                context.contentResolver.openFileDescriptor(Uri.parse(filepath), "r")?.use { it.statSize } ?: -1L
+        }
+    } catch (e: Exception) {
+        -1L
+    }
+
     /** Deletes the file, if it is still there. Blocking */
     fun delete(context: Context, filepath: String) {
         try {

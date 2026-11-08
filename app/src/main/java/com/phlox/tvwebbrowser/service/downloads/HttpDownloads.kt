@@ -94,9 +94,62 @@ object HttpDownloads {
         return HttpResponse(connection, connection.inputStream, 0)
     }
 
-    private fun connect(download: Download, offset: Long, retryDelay: Long, proxy: ProxySettings?): HttpURLConnection {
-        var url = URL(download.url)
-        val siteHost = url.host
+    private fun connect(download: Download, offset: Long, retryDelay: Long, proxy: ProxySettings?): HttpURLConnection =
+        request(download, URL(download.url), retryDelay, proxy) {
+            download.mimeType?.takeIf { it != "application/octet-stream" }?.let { setRequestProperty("Accept", it) }
+            if (offset > 0) {
+                setRequestProperty("Range", "bytes=$offset-")
+                (download.etag ?: download.lastModified)?.let { setRequestProperty("If-Range", it) }
+            }
+        }
+
+    /**
+     * Requests a part of a download other than its file: a playlist, a segment or a key of a video stream
+     * ([Download.streamSpec]), with the headers of the [download] (its cookies only on the host of its url), and
+     * [length] bytes from [offset] when [length] is not null; the file itself is not touched.
+     * @return the body: the bytes asked for
+     * @throws HttpException for a response other than the bytes asked for
+     */
+    fun fetch(download: Download, url: String, offset: Long = 0, length: Long? = null,
+              retryDelay: Long = RETRY_DELAY, proxy: ProxySettings? = null): HttpResponse {
+        val connection = request(download, URL(url), retryDelay, proxy) {
+            if (length != null) setRequestProperty("Range", "bytes=$offset-${offset + length - 1}")
+        }
+        val code = connection.responseCode
+        if (code != HttpURLConnection.HTTP_OK && !(length != null && code == HttpURLConnection.HTTP_PARTIAL)) {
+            connection.disconnect()
+            throw HttpException(code)
+        }
+        var input: InputStream = connection.inputStream
+        if (length != null) {
+            //a server that ignores the range gives the whole file
+            if (code == HttpURLConnection.HTTP_OK) skipFully(input, offset)
+            input = LimitedInputStream(input, length)
+        }
+        return HttpResponse(connection, input, offset)
+    }
+
+    private fun skipFully(input: InputStream, count: Long) {
+        var left = count
+        while (left > 0) {
+            val skipped = input.skip(left)
+            if (skipped <= 0) {
+                if (input.read() == -1) throw java.io.EOFException()
+                left--
+            } else {
+                left -= skipped
+            }
+        }
+    }
+
+    /**
+     * Opens [start], following redirects and retrying the answers of a busy server; the requests have the
+     * User-Agent, the Referer and (on the host of the url of the download only) the cookies of the [download]
+     */
+    private fun request(download: Download, start: URL, retryDelay: Long, proxy: ProxySettings?,
+                        configure: HttpURLConnection.() -> Unit): HttpURLConnection {
+        var url = start
+        val siteHost = URL(download.url).host
         var redirects = 0
         var retries = 0
         while (true) {
@@ -108,13 +161,9 @@ object HttpDownloads {
                 //the bytes of the file as they are: ranges of a compressed body would not fit together
                 setRequestProperty("Accept-Encoding", "identity")
                 download.userAgentString?.let { setRequestProperty("User-Agent", it) }
-                download.mimeType?.takeIf { it != "application/octet-stream" }?.let { setRequestProperty("Accept", it) }
                 download.refererHeader?.takeIf { it.isNotEmpty() }?.let { setRequestProperty("Referer", it) }
                 if (url.host == siteHost) download.cookies?.let { setRequestProperty("Cookie", it) }
-                if (offset > 0) {
-                    setRequestProperty("Range", "bytes=$offset-")
-                    (download.etag ?: download.lastModified)?.let { setRequestProperty("If-Range", it) }
-                }
+                configure()
             }
             val code = connection.responseCode
             val location = connection.getHeaderField("Location")
@@ -158,3 +207,30 @@ object HttpDownloads {
 }
 
 class HttpException(val code: Int) : java.io.IOException("HTTP $code")
+
+/** At most [limit] bytes of [input] */
+private class LimitedInputStream(input: InputStream, private var limit: Long) : java.io.FilterInputStream(input) {
+    override fun read(): Int {
+        if (limit <= 0) return -1
+        val b = super.read()
+        if (b >= 0) limit--
+        return b
+    }
+
+    override fun read(b: ByteArray, off: Int, len: Int): Int {
+        if (limit <= 0) return -1
+        val count = super.read(b, off, minOf(len.toLong(), limit).toInt())
+        if (count > 0) limit -= count
+        return count
+    }
+
+    override fun skip(n: Long): Long {
+        val skipped = super.skip(minOf(n, limit))
+        if (skipped > 0) limit -= skipped
+        return skipped
+    }
+
+    override fun available(): Int = minOf(super.available().toLong(), limit).toInt()
+
+    override fun markSupported(): Boolean = false
+}

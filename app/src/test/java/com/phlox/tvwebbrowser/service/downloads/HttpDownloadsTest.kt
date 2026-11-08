@@ -165,4 +165,33 @@ class HttpDownloadsTest {
             assertEquals(404, e.code)
         }
     }
+
+    @Test
+    fun fetchGivesThePartAskedForAndLeavesTheDownloadAlone() {
+        val download = download()
+        val response = HttpDownloads.fetch(download, "$base/file.bin", 100, 50)
+        assertArrayEquals(file.copyOfRange(100, 150), response.input.use { it.readBytes() })
+        assertEquals("bytes=100-149", requests.last()["Range"])
+        assertEquals("sid=1", requests.last()["Cookie"])
+        assertEquals(0L, download.size)
+        assertNull(download.etag)
+        assertFalse(download.resumable)
+
+        //a server without ranges gives the whole file: the part is cut out of it
+        ranges = false
+        assertArrayEquals(file.copyOfRange(100, 150),
+            HttpDownloads.fetch(download, "$base/file.bin", 100, 50).input.use { it.readBytes() })
+        assertArrayEquals(file, HttpDownloads.fetch(download, "$base/file.bin").input.use { it.readBytes() })
+        assertNull(requests.last()["Range"])
+    }
+
+    @Test
+    fun fetchFailsForAnErrorResponse() {
+        try {
+            HttpDownloads.fetch(download(), "$base/missing", retryDelay = 0)
+            fail()
+        } catch (e: HttpException) {
+            assertEquals(404, e.code)
+        }
+    }
 }

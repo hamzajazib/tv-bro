@@ -17,6 +17,7 @@ import com.phlox.tvwebbrowser.browser.DownloadItem
 import com.phlox.tvwebbrowser.browser.decodeBase64Data
 import com.phlox.tvwebbrowser.browser.toDownload
 import com.phlox.tvwebbrowser.model.Download
+import com.phlox.tvwebbrowser.model.StreamSpec
 import com.phlox.tvwebbrowser.service.downloads.DownloadCommands
 import com.phlox.tvwebbrowser.service.downloads.DownloadServiceNeed
 import com.phlox.tvwebbrowser.utils.DownloadFolder
@@ -168,8 +169,10 @@ class DownloadLauncher(
 
     /** Downloads the url of the [item] again, as a new download */
     fun downloadAgain(item: DownloadItem, userAgent: String?, cookies: String?) {
+        //a stream is saved again from its playlist
         download(DownloadRequest(url = item.url, referer = item.referer ?: "", userAgent = userAgent,
-            cookies = cookies, fileName = item.filename, mimeType = item.mimeType))
+            cookies = cookies, fileName = item.filename, mimeType = item.mimeType,
+            streamSpec = StreamSpec.fromJson(item.streamSpec)))
     }
 
     /**

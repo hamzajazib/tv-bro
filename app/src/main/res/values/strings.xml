@@ -227,6 +227,14 @@
     <string name="download_error_connection">connection lost</string>
     <string name="download_error_storage">can not write the file</string>
     <string name="download_error_timeout">took too long</string>
+    <string name="download_error_live">a live stream has no end</string>
+    <string name="download_error_protected">the video is protected</string>
+    <string name="download_error_format">this format of video is not supported</string>
+    <string name="download_saving_video">Saving the video</string>
+    <string name="downloaded_of_about">%1$s of about %2$s</string>
+    <string name="stream_download_failed">Can not save the video: %1$s</string>
+    <string name="stream_download_quality">Quality to download</string>
+    <string name="stream_quality_size">%1$s · about %2$s</string>
     <string name="time_left_seconds">%d s left</string>
     <string name="time_left_minutes">%d min left</string>
     <string name="time_left_hours">%1$d h %2$d min left</string>

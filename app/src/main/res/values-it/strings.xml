@@ -287,6 +287,14 @@
   <string name="download_error_connection">connessione persa</string>
   <string name="download_error_storage">impossibile scrivere il file</string>
   <string name="download_error_timeout">troppo tempo</string>
+  <string name="download_error_live">una diretta non ha una fine</string>
+  <string name="download_error_protected">il video è protetto</string>
+  <string name="download_error_format">questo formato video non è supportato</string>
+  <string name="download_saving_video">Salvataggio del video</string>
+  <string name="downloaded_of_about">%1$s di circa %2$s</string>
+  <string name="stream_download_failed">Impossibile salvare il video: %1$s</string>
+  <string name="stream_download_quality">Qualità da scaricare</string>
+  <string name="stream_quality_size">%1$s · circa %2$s</string>
   <string name="time_left_seconds">%d s rimanenti</string>
   <string name="time_left_minutes">%d min rimanenti</string>
   <string name="time_left_hours">%1$d h %2$d min rimanenti</string>

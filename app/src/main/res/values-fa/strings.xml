@@ -279,6 +279,14 @@
   <string name="download_error_connection">اتصال قطع شد</string>
   <string name="download_error_storage">نوشتن پرونده ممکن نیست</string>
   <string name="download_error_timeout">بیش از حد طول کشید</string>
+  <string name="download_error_live">پخش زنده پایانی ندارد</string>
+  <string name="download_error_protected">ویدیو محافظت‌شده است</string>
+  <string name="download_error_format">این قالب ویدیو پشتیبانی نمی‌شود</string>
+  <string name="download_saving_video">در حال ذخیرهٔ ویدیو</string>
+  <string name="downloaded_of_about">%1$s از حدود %2$s</string>
+  <string name="stream_download_failed">ذخیرهٔ ویدیو ممکن نیست: %1$s</string>
+  <string name="stream_download_quality">کیفیت بارگیری</string>
+  <string name="stream_quality_size">%1$s · حدود %2$s</string>
   <string name="time_left_seconds">%d ثانیه مانده</string>
   <string name="time_left_minutes">%d دقیقه مانده</string>
   <string name="time_left_hours">%1$d ساعت و %2$d دقیقه مانده</string>

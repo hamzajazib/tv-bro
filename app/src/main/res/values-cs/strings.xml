@@ -296,6 +296,14 @@
     <string name="download_error_connection">spojení ztraceno</string>
     <string name="download_error_storage">soubor nelze zapsat</string>
     <string name="download_error_timeout">trvalo příliš dlouho</string>
+    <string name="download_error_live">živé vysílání nemá konec</string>
+    <string name="download_error_protected">video je chráněné</string>
+    <string name="download_error_format">tento formát videa není podporován</string>
+    <string name="download_saving_video">Ukládání videa</string>
+    <string name="downloaded_of_about">%1$s z přibližně %2$s</string>
+    <string name="stream_download_failed">Video nelze uložit: %1$s</string>
+    <string name="stream_download_quality">Kvalita ke stažení</string>
+    <string name="stream_quality_size">%1$s · přibližně %2$s</string>
     <string name="time_left_seconds">Zbývá %d s</string>
     <string name="time_left_minutes">Zbývá %d min</string>
     <string name="time_left_hours">Zbývá %1$d h %2$d min</string>

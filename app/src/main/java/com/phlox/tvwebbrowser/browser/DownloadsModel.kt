@@ -28,8 +28,12 @@ data class DownloadItem(
     val referer: String? = null,
     val error: String? = null,
     val resumable: Boolean = false,
-    val bytesPerSecond: Long = 0
+    val bytesPerSecond: Long = 0,
+    /** A video stream saved as one file ([Download.streamSpec]) */
+    val streamSpec: String? = null,
 ) {
+    val isStream: Boolean get() = streamSpec != null
+
     /** In progress or paused: not finished yet */
     val isActive: Boolean get() = status == Download.Status.IN_PROGRESS || status == Download.Status.PAUSED
 
@@ -47,13 +51,14 @@ data class DownloadItem(
         it.referer = referer
         it.error = error
         it.resumable = resumable
+        it.streamSpec = streamSpec
     }
 
     companion object {
         fun of(download: Download, bytesPerSecond: Long = 0) = DownloadItem(
             download.id, download.time, download.filename, download.filepath, download.url, download.size,
             download.bytesReceived, download.status, download.mimeType, download.referer, download.error,
-            download.resumable, bytesPerSecond)
+            download.resumable, bytesPerSecond, download.streamSpec)
     }
 }
 

@@ -278,6 +278,14 @@
   <string name="download_error_connection">Verbindung verloren</string>
   <string name="download_error_storage">Datei kann nicht geschrieben werden</string>
   <string name="download_error_timeout">Zeitüberschreitung</string>
+  <string name="download_error_live">ein Livestream hat kein Ende</string>
+  <string name="download_error_protected">das Video ist geschützt</string>
+  <string name="download_error_format">dieses Videoformat wird nicht unterstützt</string>
+  <string name="download_saving_video">Video wird gespeichert</string>
+  <string name="downloaded_of_about">%1$s von etwa %2$s</string>
+  <string name="stream_download_failed">Video kann nicht gespeichert werden: %1$s</string>
+  <string name="stream_download_quality">Qualität zum Herunterladen</string>
+  <string name="stream_quality_size">%1$s · etwa %2$s</string>
   <string name="time_left_seconds">Noch %d s</string>
   <string name="time_left_minutes">Noch %d min</string>
   <string name="time_left_hours">Noch %1$d h %2$d min</string>

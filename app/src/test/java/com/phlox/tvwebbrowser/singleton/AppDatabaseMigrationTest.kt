@@ -121,7 +121,7 @@ class AppDatabaseMigrationTest {
         assertEquals(1, runBlocking { db.historyDao().count() })
 
         val sqlDb = db.openHelper.readableDatabase
-        assertEquals(27, sqlDb.version)
+        assertEquals(28, sqlDb.version)
         sqlDb.query("PRAGMA table_info(tabs)").use { cursor ->
             val nameIndex = cursor.getColumnIndex("name")
             val columns = ArrayList<String>()
@@ -369,5 +369,33 @@ class AppDatabaseMigrationTest {
         runBlocking { db.hostsDao().setBuiltInPlayer("example.com", false) }
         assertEquals(listOf(HostsDao.BuiltInPlayerSetting("example.com", false)),
             runBlocking { db.hostsDao().builtInPlayerSettings() })
+    }
+
+    @Test
+    fun migrate27To28AddsTheStreamOfDownloads() {
+        createDatabase(27) { db ->
+            db.insert("downloads", null, ContentValues().apply {
+                put("id", 1L)
+                put("time", 1000L)
+                put("filename", "film.mp4")
+                put("filepath", "content://media/external/downloads/1")
+                put("url", "https://example.com/film.mp4")
+                put("size", 100L)
+                put("bytes_received", 100L)
+                put("status", Download.Status.DONE)
+                put("resumable", 1)
+            })
+        }
+
+        val db = openMigrated()
+        val dao = db.downloadDao()
+        val file = runBlocking { dao.get(1) }!!
+        //a file is downloaded as it is
+        assertNull(file.streamSpec)
+        assertEquals(Download.Status.DONE, file.status)
+        assertEquals(true, file.resumable)
+        file.streamSpec = "{}"
+        runBlocking { dao.update(file) }
+        assertEquals("{}", runBlocking { dao.get(1) }!!.streamSpec)
     }
 }

@@ -271,6 +271,14 @@
   <string name="download_error_connection">连接已断开</string>
   <string name="download_error_storage">无法写入文件</string>
   <string name="download_error_timeout">耗时过长</string>
+  <string name="download_error_live">直播没有结尾</string>
+  <string name="download_error_protected">视频受保护</string>
+  <string name="download_error_format">不支持此视频格式</string>
+  <string name="download_saving_video">正在保存视频</string>
+  <string name="downloaded_of_about">%1$s / 约 %2$s</string>
+  <string name="stream_download_failed">无法保存视频：%1$s</string>
+  <string name="stream_download_quality">下载画质</string>
+  <string name="stream_quality_size">%1$s · 约 %2$s</string>
   <string name="time_left_seconds">剩余 %d 秒</string>
   <string name="time_left_minutes">剩余 %d 分钟</string>
   <string name="time_left_hours">剩余 %1$d 小时 %2$d 分钟</string>
