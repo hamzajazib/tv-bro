@@ -23,6 +23,7 @@ import com.phlox.tvwebbrowser.model.BrowserTab
 import com.phlox.tvwebbrowser.webengine.EngineUiHost
 import com.phlox.tvwebbrowser.webengine.virtualCursor
 import com.phlox.tvwebbrowser.widgets.cursor.CursorDrawerDelegate
+import com.phlox.tvwebbrowser.widgets.cursor.PointerMode
 
 class CursorMenuView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -124,6 +125,10 @@ class CursorMenuView @JvmOverloads constructor(
         lastShowTime = now
         this.menuContext = MenuContext(tab, windowProvider, cursorDrawerDelegate,
             baseUri, linkUri, srcUri, title, altText, textContent, x, y)
+        // the grab mode of a mouse scrolls, that of a finger drags
+        vb.btnGrabMode.setImageResource(
+            if (cursorDrawerDelegate.pointerMode == PointerMode.MOUSE) R.drawable.ic_scroll_mode else R.drawable.ic_grab_mode
+        )
         visibility = VISIBLE
         backCallback.isEnabled = true
         handler.postDelayed( {

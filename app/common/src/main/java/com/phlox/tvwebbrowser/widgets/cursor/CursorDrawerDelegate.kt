@@ -42,7 +42,8 @@ class CursorDrawerDelegate(val context: Context, val surface: View, private val 
     var pointerMode: PointerMode = PointerMode.TOUCH
         set(value) {
             if (field == value) return
-            // the stream in flight belongs to the old emulator: it is closed before the swap
+            // the stream in flight belongs to the old emulator: it is closed before the swap, and
+            // the grab mode ends with it (it means another thing for the other mode)
             cancelActiveGestures()
             field = value
             pointer = if (value == PointerMode.MOUSE) mouseEmulator else touchEmulator
@@ -59,14 +60,22 @@ class CursorDrawerDelegate(val context: Context, val surface: View, private val 
     /** Pixels per frame along [cursorDirection]: grows with the acceleration up to the cap */
     private var cursorSpeed = 0f
     private var lastCursorUpdate = SystemClock.uptimeMillis() - CURSOR_DISAPPEAR_TIMEOUT
+    /** The cursor is pressed: the click key is held, or a finger holds the page in the grab mode */
     private var dpadCenterPressed = false
     /**
-     * The click key is held but the mouse press is not sent yet (only in [PointerMode.MOUSE]). A mouse
-     * cannot cancel a press: its release is a click, and GeckoView keeps the pressed element `:active`
-     * after a cancel. So the press waits for the cursor to move (a drag) or the key to go up (a
-     * click), and a long press, which opens the menu of the cursor, leaves nothing in the page.
+     * The cursor is pressed but the press is not sent yet; it waits for the cursor to move (a drag).
+     * A mouse cannot cancel a press: its release is a click, and GeckoView keeps the pressed element
+     * `:active` after a cancel. So the press of the click key in [PointerMode.MOUSE] waits for the
+     * cursor to move or the key to go up (a click), and a long press, which opens the menu of the
+     * cursor, leaves nothing in the page. The finger of the grab mode waits too: one that stood still
+     * would be a long press of the page.
      */
-    private var mousePressPending = false
+    private var pressPending = false
+    /** Where the press in the page started */
+    private val pressPoint = PointF()
+    private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+    /** The part of a pixel the grab mode of a mouse has not scrolled yet */
+    private val scrollRemainder = PointF()
     private val tmpPointF = PointF()
     var callback: Callback? = null
     var customScrollCallback: CustomScrollCallback?
@@ -76,6 +85,11 @@ class CursorDrawerDelegate(val context: Context, val surface: View, private val 
         }
     private val cursorHideRunnable = Runnable { surface.invalidate() }
     private val mainHandler = Handler(Looper.getMainLooper())
+    /**
+     * The grab mode, turned on from the menu of the cursor and left with the click key or Back. As a
+     * finger it holds the page and the cursor drags it. As a mouse, where a held button would select
+     * text, it scrolls: the cursor stands and the directions turn the wheel over the element under it.
+     */
     private var grabMode = false
         set(value) {
             if (field == value) return
@@ -99,34 +113,36 @@ class CursorDrawerDelegate(val context: Context, val surface: View, private val 
         callback?.onLongPress(cursorPosition.x.toInt(), cursorPosition.y.toInt())
     }
 
-    /** The click key went down: a finger touches at once, a mouse waits (see [mousePressPending]) */
+    /** The click key went down: a finger touches at once, a mouse waits (see [pressPending]) */
     private fun startPress() {
         dpadCenterPressed = true
         if (pointerMode == PointerMode.MOUSE) {
-            mousePressPending = true
+            pressPending = true
             // A mouse hovers where it presses. The cursor may not have moved since the page loaded,
             // and a long press needs the page to know the element under it well before the menu
             // asks (WebView finds the link of the menu from the last hovered element).
             pointer.move(cursorPosition.x, cursorPosition.y, false)
         } else {
+            pressPoint.set(cursorPosition)
             pointer.press(cursorPosition.x, cursorPosition.y)
         }
     }
 
-    /** Sends the mouse press that waited, at the point where the key went down */
+    /** Sends the press that waited, at the point where it began */
     private fun flushPendingPress(x: Float, y: Float) {
-        if (mousePressPending) {
-            mousePressPending = false
+        if (pressPending) {
+            pressPending = false
+            pressPoint.set(x, y)
             pointer.press(x, y)
         }
     }
 
-    /** Releases (a click) or cancels the press; a mouse press that did not start is clicked or dropped */
+    /** Releases (a click) or cancels the press; a press that did not start is clicked or dropped */
     private fun endPress(cancel: Boolean) {
         if (!dpadCenterPressed) return
         dpadCenterPressed = false
-        if (mousePressPending) {
-            mousePressPending = false
+        if (pressPending) {
+            pressPending = false
             if (!cancel) {
                 pointer.press(cursorPosition.x, cursorPosition.y)
                 pointer.release(cursorPosition.x, cursorPosition.y)
@@ -187,12 +203,13 @@ class CursorDrawerDelegate(val context: Context, val surface: View, private val 
      * Ends everything the page still believes is in flight (the press, the scroll hack, the hover
      * of a mouse) and stops the movement. Called when the cursor is turned off or its [pointerMode]
      * changes: from then on the key up events can no longer reach the cursor, so without this the
-     * page would keep a stuck pointer. The grab mode is left as it is.
+     * page would keep a stuck pointer. The grab mode ends too.
      */
     fun cancelActiveGestures() {
         surface.removeCallbacks(longPressRunnable)
         surface.removeCallbacks(cursorUpdateRunnable)
         endPress(cancel = true)
+        grabMode = false
         scroller.cancelScrollHack()
         pointer.detach()
         cursorDirection.set(0f, 0f)
@@ -252,8 +269,8 @@ class CursorDrawerDelegate(val context: Context, val surface: View, private val 
                     !surface.keyDispatcherState.isTracking(event)
                 ) {
                     if (grabMode) {
+                        // the key only leaves the grab mode, the page does not get it
                         exitGrabMode()
-                        return false
                     } else {
                         surface.keyDispatcherState.startTracking(event, this)
                         if (!isCursorDisappear && !dpadCenterPressed) {
@@ -305,19 +322,41 @@ class CursorDrawerDelegate(val context: Context, val surface: View, private val 
 
     fun dispatchDraw(canvas: Canvas) {
         if (grabMode || !isCursorDisappear) {
-            renderer.draw(canvas, cursorPosition, dpadCenterPressed, grabMode, cursorRadiusAnimationMultiplier)
+            val grab = when {
+                !grabMode -> CursorRenderer.Grab.NONE
+                grabScrolls -> CursorRenderer.Grab.SCROLL
+                else -> CursorRenderer.Grab.DRAG
+            }
+            renderer.draw(canvas, cursorPosition, dpadCenterPressed, grab, cursorRadiusAnimationMultiplier)
         }
     }
 
+    /** The grab mode scrolls under a standing cursor ([PointerMode.MOUSE]) rather than dragging */
+    private val grabScrolls: Boolean
+        get() = pointerMode == PointerMode.MOUSE
+
+    /** Turns the grab mode on, see [grabMode] */
     fun goToGrabMode() {
+        if (grabMode) return
+        // a press of the click key in flight belongs to a click, not to the grab
+        surface.removeCallbacks(longPressRunnable)
+        endPress(cancel = true)
+        scrollRemainder.set(0f, 0f)
         grabMode = true
+        if (!grabScrolls) {
+            // the finger touches the page when the cursor starts to move
+            dpadCenterPressed = true
+            pressPending = true
+        }
         surface.postInvalidate()
     }
 
     fun exitGrabMode() {
-        // the grab mode holds no press of its own: this UP is what it has always sent, as a finger
-        touchEmulator.release(cursorPosition.x, cursorPosition.y)
-        dpadCenterPressed = false
+        if (!grabMode) return
+        // A drag ends where it is (a release, as a finger lifted). A finger that did not move past
+        // the touch slop is cancelled instead: its release would be a tap.
+        val moved = PointF.length(cursorPosition.x - pressPoint.x, cursorPosition.y - pressPoint.y)
+        endPress(cancel = pressPending || moved < touchSlop)
         grabMode = false
         surface.postInvalidate()
     }
@@ -343,9 +382,20 @@ class CursorDrawerDelegate(val context: Context, val surface: View, private val 
             // each axis reaches the cap together with the speed, as when the axes were apart
             val speedX = cursorDirection.x * cursorSpeed
             val speedY = cursorDirection.y * cursorSpeed
+            surface.removeCallbacks(longPressRunnable)
+            if (grabMode && grabScrolls) {
+                // the cursor stands and the page under it scrolls at the speed it would move at
+                scrollRemainder.offset(speedX, speedY)
+                val dx = scrollRemainder.x.toInt()
+                val dy = scrollRemainder.y.toInt()
+                scrollRemainder.offset(-dx.toFloat(), -dy.toFloat())
+                scroller.scrollBy(dx, dy, cursorPosition, allowScrollHack = true)
+                surface.invalidate()
+                surface.post(this)
+                return
+            }
             tmpPointF.set(cursorPosition)
             cursorPosition.offset(speedX, speedY)
-            surface.removeCallbacks(longPressRunnable)
             if (cursorPosition.x < 0) {
                 cursorPosition.x = 0f
             } else if (cursorPosition.x > surface.width - 1) {
@@ -416,9 +466,12 @@ class CursorDrawerDelegate(val context: Context, val surface: View, private val 
     }
 
     fun hideCursor() {
-        // a press already in the page is released as before, a mouse press that waited is dropped
-        endPress(cancel = mousePressPending)
-        grabMode = false
+        if (grabMode) {
+            exitGrabMode()
+        } else {
+            // a press already in the page is released as before, a mouse press that waited is dropped
+            endPress(cancel = pressPending)
+        }
         lastCursorUpdate = SystemClock.uptimeMillis() - CURSOR_DISAPPEAR_TIMEOUT
         surface.postInvalidate()
     }

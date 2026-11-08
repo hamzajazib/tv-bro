@@ -329,6 +329,89 @@ class CursorPointerEmulationTest {
     }
 
     @Test
+    fun theGrabModeOfAMouseScrollsUnderAStandingCursor() {
+        val delegate = attachedDelegate(PointerMode.MOUSE)
+        delegate.moveTo(100f, 100f)
+        target.sent.clear()
+
+        delegate.goToGrabMode()
+        delegate.setDirection(0f, 1f)
+        runFrames(20)
+        delegate.setDirection(0f, 0f)
+        runFrames(2)
+
+        assertEquals(100f, delegate.cursorPosition.x, 0f)
+        assertEquals(100f, delegate.cursorPosition.y, 0f)
+        assertTrue(target.sent.isNotEmpty())
+        assertTrue(target.sent.all { it.action == MotionEvent.ACTION_SCROLL && !it.touch })
+        // the page scrolls down: a negative VSCROLL
+        assertTrue(target.sent.all { it.vScroll < 0f && it.hScroll == 0f })
+        target.sent.clear()
+
+        // the click key only leaves the mode: no click and no key for the page
+        assertTrue(delegate.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER)))
+        delegate.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
+        assertEquals(false, delegate.canHandleBackNavigation())
+        assertEquals(emptyList<Int>(), target.actions())
+    }
+
+    @Test
+    fun theGrabModeOfAFingerDragsThePage() {
+        val delegate = attachedDelegate()
+        delegate.moveTo(100f, 100f)
+        target.sent.clear()
+
+        delegate.goToGrabMode()
+        // a finger that stood still would be a long press of the page
+        runFrames(5)
+        assertEquals(emptyList<Int>(), target.actions())
+
+        delegate.setDirection(1f, 0f)
+        runFrames(20)
+        delegate.setDirection(0f, 0f)
+        runFrames(2)
+        assertTrue(delegate.cursorPosition.x > 100f)
+        delegate.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER))
+        delegate.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
+
+        val actions = target.actions()
+        assertEquals(MotionEvent.ACTION_DOWN, actions.first())
+        assertTrue(actions.drop(1).dropLast(1).isNotEmpty())
+        assertTrue(actions.drop(1).dropLast(1).all { it == MotionEvent.ACTION_MOVE })
+        assertEquals(MotionEvent.ACTION_UP, actions.last())
+        assertTrue(target.sent.all { it.touch && it.toolType == MotionEvent.TOOL_TYPE_FINGER })
+    }
+
+    @Test
+    fun aFingerGrabLeftWithoutMovingSendsNothing() {
+        val delegate = attachedDelegate()
+        delegate.moveTo(100f, 100f)
+        target.sent.clear()
+
+        delegate.goToGrabMode()
+        delegate.handleBackNavigation()
+        delegate.goToGrabMode()
+        delegate.hideCursor()
+
+        assertEquals(emptyList<Int>(), target.actions())
+    }
+
+    @Test
+    fun switchingThePointerModeEndsTheGrabAndItsDrag() {
+        val delegate = attachedDelegate()
+        delegate.moveTo(100f, 100f)
+        delegate.goToGrabMode()
+        delegate.setDirection(1f, 0f)
+        runFrames(5)
+        delegate.setDirection(0f, 0f)
+        target.sent.clear()
+
+        delegate.pointerMode = PointerMode.MOUSE
+        assertEquals(listOf(MotionEvent.ACTION_CANCEL), target.actions())
+        assertEquals(false, delegate.canHandleBackNavigation())
+    }
+
+    @Test
     fun aNewDirectionSteersWithoutStopping() {
         val delegate = attachedDelegate()
         delegate.moveTo(100f, 200f)
