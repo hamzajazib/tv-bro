@@ -2,6 +2,7 @@ package com.phlox.tvwebbrowser.service.downloads.stream
 
 import android.net.Uri
 import android.util.Log
+import androidx.media3.common.C
 import androidx.media3.muxer.MuxerException
 import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.model.Download
@@ -29,16 +30,17 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 /**
- * Saves an HLS stream ([Download.streamSpec]) as one MP4 file. Its segments are downloaded (and decrypted) into
+ * Saves a video stream ([Download.streamSpec]: HLS, with the audio inside its segments or a rendition of its own, or
+ * DASH) as one MP4 file, from its [StreamPlan]. The segments of its tracks are downloaded (and decrypted) into
  * the [StreamWorkDir] of the download first, each one into its own file, so a paused or interrupted download
  * goes on with the segments it does not have yet; then [StreamMuxer] packs them into the file, deleting each
  * segment once it is written. The progress is in the bytes of the segments, the size estimated from those
  * already there; while the file is packed, [Download.bytesReceived] equals [Download.size].
  */
-class HlsDownloadTask(download: Download, listener: Listener, folder: Uri?, private val proxy: ProxySettings? = null) :
+class VideoStreamDownloadTask(download: Download, listener: Listener, folder: Uri?, private val proxy: ProxySettings? = null) :
     DownloadTask(download, listener, folder) {
     companion object {
-        private val TAG: String = HlsDownloadTask::class.java.simpleName
+        private val TAG: String = VideoStreamDownloadTask::class.java.simpleName
         private const val MAX_PLAYLIST_SIZE = 8 * 1024 * 1024
         private const val MAX_KEY_SIZE = 1024
         private const val SEGMENT_ATTEMPTS = 3
@@ -64,27 +66,32 @@ class HlsDownloadTask(download: Download, listener: Listener, folder: Uri?, priv
             DownloadFiles.delete(context, download.filepath)
             download.filepath = ""
         }
+        //the video and the audio of the same time together, so the estimate of the size holds early
+        val segments = plan.tracks.flatMap { track -> track.segments.map { track to it } }.sortedBy { it.second.startUs }
+        val totalUs = plan.tracks.sumOf { it.durationUs }
         var doneUs = 0L
         download.bytesReceived = 0
-        for (segment in plan.segments) {
-            val file = segmentFile(dir, segment.index)
+        for ((track, segment) in segments) {
+            val file = segmentFile(dir, track, segment.index)
             if (file.exists()) {
                 download.bytesReceived += file.length()
                 doneUs += segment.durationUs
             }
         }
-        estimateSize(plan, doneUs, spec)
+        estimateSize(totalUs, doneUs, spec)
         runBlocking { repository.update(download) }
 
-        plan.inits.forEachIndexed { i, init -> if (!isStopped()) downloadPiece(init, initFile(dir, i), countBytes = false) }
-        for (segment in plan.segments) {
+        for (track in plan.tracks) {
+            track.inits.forEachIndexed { i, init -> if (!isStopped()) downloadPiece(init, initFile(dir, track, i), countBytes = false) }
+        }
+        for ((track, segment) in segments) {
             if (isStopped()) return
-            val file = segmentFile(dir, segment.index)
+            val file = segmentFile(dir, track, segment.index)
             if (file.exists()) continue
             downloadPiece(segment.piece, file, countBytes = true)
             if (isStopped()) return
             doneUs += segment.durationUs
-            estimateSize(plan, doneUs, spec)
+            estimateSize(totalUs, doneUs, spec)
             reportProgress()
         }
         if (isStopped()) return
@@ -93,31 +100,36 @@ class HlsDownloadTask(download: Download, listener: Listener, folder: Uri?, priv
 
     private fun isStopped() = stopRequest != Stop.NONE
 
-    private fun loadPlan(spec: StreamSpec): HlsPlan {
-        val text = HttpDownloads.fetch(download, spec.url, proxy = proxy).let { response ->
-            try {
-                String(readAll(response.input, MAX_PLAYLIST_SIZE), Charsets.UTF_8)
-            } finally {
-                response.connection?.disconnect()
-            }
+    private fun fetchText(url: String): String = HttpDownloads.fetch(download, url, proxy = proxy).let { response ->
+        try {
+            String(readAll(response.input, MAX_PLAYLIST_SIZE), Charsets.UTF_8)
+        } finally {
+            response.connection?.disconnect()
         }
+    }
+
+    private fun loadPlan(spec: StreamSpec): StreamPlan {
         return try {
-            HlsPlan.parse(text, spec.url)
-        } catch (e: HlsPlan.UnsupportedStreamException) {
+            when (spec.kind) {
+                StreamSpec.Kind.HLS -> StreamPlan(HlsPlan.parse(fetchText(spec.url), spec.url, "v"),
+                    spec.audioUrl?.let { HlsPlan.parse(fetchText(it), it, "a") })
+                StreamSpec.Kind.DASH -> DashPlan.plan(DashPlan.parse(fetchText(spec.url), spec.url), spec)
+            }
+        } catch (e: UnsupportedStreamException) {
             throw DownloadErrorException(when (e.problem) {
-                HlsPlan.Problem.LIVE -> Download.Error.LIVE
-                HlsPlan.Problem.PROTECTED -> Download.Error.PROTECTED
+                StreamProblem.LIVE -> Download.Error.LIVE
+                StreamProblem.PROTECTED -> Download.Error.PROTECTED
                 else -> Download.Error.FORMAT
             }, e.message)
-        } catch (e: IOException) {
-            //the parser of Media3 (ParserException): not a playlist
+        } catch (e: androidx.media3.common.ParserException) {
+            //not a playlist or a manifest
             throw DownloadErrorException(Download.Error.FORMAT, e.message)
         }
     }
 
     /** Drops the segments of another plan (the playlist changed since the download started) */
-    private fun keepSegmentsOf(plan: HlsPlan, dir: File) {
-        val description = "${plan.segments.size} ${plan.durationUs} ${plan.inits.size}"
+    private fun keepSegmentsOf(plan: StreamPlan, dir: File) {
+        val description = plan.tracks.joinToString(";") { it.description }
         val file = File(dir, PLAN_FILE)
         val known = if (file.exists()) file.readText() else null
         if (known == description) return
@@ -129,14 +141,17 @@ class HlsDownloadTask(download: Download, listener: Listener, folder: Uri?, priv
         }
     }
 
-    private fun segmentFile(dir: File, index: Int) = File(dir, "s$index")
+    private fun segmentFile(dir: File, track: TrackPlan, index: Int) = File(dir, "${track.name}s$index")
 
-    private fun initFile(dir: File, index: Int) = File(dir, "i$index")
+    private fun initFile(dir: File, track: TrackPlan, index: Int) = File(dir, "${track.name}i$index")
 
-    /** The size of the file from the bytes of the segments there; the size of the bitrate before */
-    private fun estimateSize(plan: HlsPlan, doneUs: Long, spec: StreamSpec) {
+    /**
+     * The size of the file from the bytes of the segments there ([doneUs] of the [totalUs] of all tracks); the size
+     * of the bitrate before
+     */
+    private fun estimateSize(totalUs: Long, doneUs: Long, spec: StreamSpec) {
         download.size = when {
-            doneUs > 0 && plan.durationUs > 0 -> (download.bytesReceived.toDouble() / doneUs * plan.durationUs).toLong()
+            doneUs > 0 && totalUs > 0 -> (download.bytesReceived.toDouble() / doneUs * totalUs).toLong()
             else -> spec.estimatedSize
         }
         keepSizeAhead()
@@ -154,7 +169,7 @@ class HlsDownloadTask(download: Download, listener: Listener, folder: Uri?, priv
      * Downloads [piece] (decrypted) into [file], through a temporary file, so a file that is there is complete;
      * tries again after errors of the connection. Nothing is written when the download is asked to stop.
      */
-    private fun downloadPiece(piece: HlsPlan.Piece, file: File, countBytes: Boolean) {
+    private fun downloadPiece(piece: TrackPlan.Piece, file: File, countBytes: Boolean) {
         if (file.exists()) return
         val part = File(file.parentFile, file.name + ".part")
         var attempt = 0
@@ -183,7 +198,7 @@ class HlsDownloadTask(download: Download, listener: Listener, folder: Uri?, priv
     }
 
     /** @return false if the download was asked to stop */
-    private fun writePiece(piece: HlsPlan.Piece, part: File, countBytes: Boolean): Boolean {
+    private fun writePiece(piece: TrackPlan.Piece, part: File, countBytes: Boolean): Boolean {
         val response = HttpDownloads.fetch(download, piece.url, piece.offset, piece.length, proxy = proxy)
         try {
             val input = piece.key?.let { decrypting(response.input, it) } ?: response.input
@@ -216,7 +231,7 @@ class HlsDownloadTask(download: Download, listener: Listener, folder: Uri?, priv
         }
     }
 
-    private fun decrypting(input: InputStream, key: HlsPlan.Key): InputStream {
+    private fun decrypting(input: InputStream, key: TrackPlan.Key): InputStream {
         val keyBytes = keys.getOrPut(key.url) {
             val response = HttpDownloads.fetch(download, key.url, proxy = proxy)
             try {
@@ -230,7 +245,7 @@ class HlsDownloadTask(download: Download, listener: Listener, folder: Uri?, priv
     }
 
     /** Packs the segments into the file of the download */
-    private fun pack(plan: HlsPlan, dir: File) {
+    private fun pack(plan: StreamPlan, dir: File) {
         download.size = download.bytesReceived
         reportProgress(force = true)
         val resumable = download.resumable
@@ -245,14 +260,17 @@ class HlsDownloadTask(download: Download, listener: Listener, folder: Uri?, priv
         runBlocking { repository.update(download) }
         val muxer = StreamMuxer(StreamMuxer.muxerFor(output)) { isStopped() }
         try {
-            for (chunk in plan.chunks) {
-                val inputs = ArrayList<() -> InputStream>()
-                chunk.init?.let { init -> inputs += { FileInputStream(initFile(dir, init)) } }
-                for (segment in chunk.segments) {
-                    val file = segmentFile(dir, segment.index)
-                    inputs += { DeletingInputStream(file) }
+            for ((video, audio) in plan.chunkPairs) {
+                val sources = ArrayList<StreamMuxer.Source>()
+                //the audio inside the video segments is dropped when the audio has segments of its own
+                sources += source(dir, plan.video, video,
+                    if (audio != null) setOf(C.TRACK_TYPE_VIDEO) else setOf(C.TRACK_TYPE_VIDEO, C.TRACK_TYPE_AUDIO))
+                if (audio != null) sources += source(dir, plan.audio!!, audio, setOf(C.TRACK_TYPE_AUDIO))
+                try {
+                    muxer.writeChunk(sources, video.startUs)
+                } finally {
+                    sources.forEach { it.input.close() }
                 }
-                sequenceOf(inputs).use { muxer.writeChunk(it, fragmentedMp4 = chunk.init != null, startUs = chunk.startUs) }
             }
             muxer.finish()
         } catch (e: StreamMuxer.StoppedException) {
@@ -276,6 +294,17 @@ class HlsDownloadTask(download: Download, listener: Listener, folder: Uri?, priv
         val size = DownloadFiles.sizeOf(context, download.filepath)
         if (size > 0) download.bytesReceived = size
         StreamWorkDir.delete(context, download.id)
+    }
+
+    /** The segments of [chunk] of [track] as one stream, its init segment first; each segment is deleted once read */
+    private fun source(dir: File, track: TrackPlan, chunk: TrackPlan.Chunk, types: Set<Int>): StreamMuxer.Source {
+        val inputs = ArrayList<() -> InputStream>()
+        chunk.init?.let { init -> inputs += { FileInputStream(initFile(dir, track, init)) } }
+        for (segment in chunk.segments) {
+            val file = segmentFile(dir, track, segment.index)
+            inputs += { DeletingInputStream(file) }
+        }
+        return StreamMuxer.Source(sequenceOf(inputs), chunk.init != null, types)
     }
 
     /** Deletes the file being packed: a resumed download packs it again */

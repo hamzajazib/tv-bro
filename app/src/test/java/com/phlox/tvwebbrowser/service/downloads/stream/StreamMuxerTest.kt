@@ -50,6 +50,7 @@ class StreamMuxerTest {
 
     private fun read(file: File, extractor: Extractor = Mp4Extractor(SubtitleParser.Factory.UNSUPPORTED)): Map<Int, Track> {
         val tracks = HashMap<Int, Track>()
+        order.clear()
         extractor.init(object : ExtractorOutput {
             override fun track(id: Int, type: Int): TrackOutput {
                 val track = Track()
@@ -68,6 +69,7 @@ class StreamMuxerTest {
 
                     override fun sampleMetadata(timeUs: Long, flags: Int, size: Int, offset: Int, cryptoData: TrackOutput.CryptoData?) {
                         track.times += timeUs
+                        order += type to timeUs
                         track.keys += flags and C.BUFFER_FLAG_KEY_FRAME != 0
                     }
                 }
@@ -93,6 +95,21 @@ class StreamMuxerTest {
         }
         return tracks
     }
+
+    /** The samples of the last file read, in the order of the file */
+    private val order = ArrayList<Pair<Int, Long>>()
+
+    /** The samples of the tracks are interleaved: none comes after one of the other track more than 0.5 s later */
+    private fun checkInterleaved() {
+        val last = HashMap<Int, Long>()
+        for ((type, time) in order) {
+            last[type] = maxOf(last[type] ?: Long.MIN_VALUE, time)
+            val others = last.filterKeys { it != type }.values
+            others.forEach { assertTrue("$time after ${'$'}it", time - it < 500_000) }
+        }
+    }
+
+    private fun source(types: Set<Int>, hasInit: Boolean, vararg paths: String) = StreamMuxer.Source(inputs(*paths), hasInit, types)
 
     private fun pack(fragmented: Boolean, vararg chunks: Pair<Long, Array<String>>): File {
         val file = folder.newFile("out.mp4")
@@ -152,6 +169,45 @@ class StreamMuxerTest {
         muxer.finish()
         val t = read(file, FragmentedMp4Extractor(SubtitleParser.Factory.UNSUPPORTED))
         checkTracks(t, 2)
+    }
+
+    @Test
+    fun packsVideoWithTheAudioOfItsRendition() {
+        val file = folder.newFile("out.mp4")
+        val muxer = StreamMuxer(StreamMuxer.muxerFor(FileOutputStream(file)))
+        muxer.writeChunk(listOf(source(setOf(C.TRACK_TYPE_VIDEO), false, "hls-audio/0_s0.ts", "hls-audio/0_s1.ts"),
+            source(setOf(C.TRACK_TYPE_AUDIO), false, "hls-audio/1_s0.ts", "hls-audio/1_s1.ts", "hls-audio/1_s2.ts")), 0)
+        muxer.finish()
+        checkTracks(read(file), 2)
+        checkInterleaved()
+    }
+
+    @Test
+    fun packsDashVideoAndAudio() {
+        val file = folder.newFile("out.mp4")
+        val muxer = StreamMuxer(StreamMuxer.muxerFor(FileOutputStream(file)))
+        muxer.writeChunk(listOf(
+            source(setOf(C.TRACK_TYPE_VIDEO), true, "dash/init-0.m4s", "dash/chunk-0-001.m4s", "dash/chunk-0-002.m4s"),
+            source(setOf(C.TRACK_TYPE_AUDIO), true, "dash/init-1.m4s", "dash/chunk-1-001.m4s", "dash/chunk-1-002.m4s",
+                "dash/chunk-1-003.m4s")), 0)
+        muxer.finish()
+        //the empty edits of ffmpeg, as for fMP4 HLS
+        checkTracks(read(file), 2, maxStartUs = 200_000)
+        checkInterleaved()
+    }
+
+    @Test
+    fun theAudioInsideTheVideoIsDroppedForTheAudioOfItsOwn() {
+        val file = folder.newFile("out.mp4")
+        val muxer = StreamMuxer(StreamMuxer.muxerFor(FileOutputStream(file)))
+        //the video of the muxed fixture has audio inside; the audio source is of other segments
+        muxer.writeChunk(listOf(source(setOf(C.TRACK_TYPE_VIDEO), false, "ts/s0.ts", "ts/s1.ts"),
+            source(setOf(C.TRACK_TYPE_AUDIO), false, "hls-audio/1_s0.ts", "hls-audio/1_s1.ts", "hls-audio/1_s2.ts")), 0)
+        muxer.finish()
+        val tracks = read(file)
+        assertEquals(2, tracks.size)
+        //the samples of one audio, not of both
+        assertEquals(45, tracks[C.TRACK_TYPE_AUDIO]!!.times.size)
     }
 
     @Test

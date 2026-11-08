@@ -20,10 +20,10 @@ import javax.crypto.spec.SecretKeySpec
 class HlsPlanTest {
     private val base = "https://cdn.example.com/film/720/index.m3u8"
 
-    private fun problemOf(text: String): HlsPlan.Problem? = try {
+    private fun problemOf(text: String): StreamProblem? = try {
         HlsPlan.parse(text, base)
         null
-    } catch (e: HlsPlan.UnsupportedStreamException) {
+    } catch (e: UnsupportedStreamException) {
         e.problem
     }
 
@@ -105,13 +105,13 @@ class HlsPlanTest {
     @Test
     fun refusesWhatCanNotBeSaved() {
         //no end: live
-        assertEquals(HlsPlan.Problem.LIVE, problemOf("""
+        assertEquals(StreamProblem.LIVE, problemOf("""
             #EXTM3U
             #EXT-X-TARGETDURATION:4
             #EXTINF:4,
             a.ts
         """.trimIndent()))
-        assertEquals(HlsPlan.Problem.PROTECTED, problemOf("""
+        assertEquals(StreamProblem.PROTECTED, problemOf("""
             #EXTM3U
             #EXT-X-TARGETDURATION:4
             #EXT-X-KEY:METHOD=SAMPLE-AES,URI="skd://key"
@@ -119,7 +119,7 @@ class HlsPlanTest {
             a.ts
             #EXT-X-ENDLIST
         """.trimIndent()))
-        assertEquals(HlsPlan.Problem.PROTECTED, problemOf("""
+        assertEquals(StreamProblem.PROTECTED, problemOf("""
             #EXTM3U
             #EXT-X-TARGETDURATION:4
             #EXT-X-KEY:METHOD=SAMPLE-AES-CTR,KEYFORMAT="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed",URI="data:text/plain;base64,AAAA"
@@ -127,7 +127,7 @@ class HlsPlanTest {
             a.ts
             #EXT-X-ENDLIST
         """.trimIndent()))
-        assertEquals(HlsPlan.Problem.NOT_MEDIA, problemOf("""
+        assertEquals(StreamProblem.NOT_MEDIA, problemOf("""
             #EXTM3U
             #EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=1280x720
             720/index.m3u8

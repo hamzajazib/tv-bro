@@ -29,7 +29,7 @@ import com.phlox.tvwebbrowser.channels.ChannelKind
 import com.phlox.tvwebbrowser.channels.HomeChannels
 import com.phlox.tvwebbrowser.model.Download
 import com.phlox.tvwebbrowser.net.ProxySettings
-import com.phlox.tvwebbrowser.service.downloads.stream.HlsDownloadTask
+import com.phlox.tvwebbrowser.service.downloads.stream.VideoStreamDownloadTask
 import com.phlox.tvwebbrowser.utils.DownloadFileActions
 import com.phlox.tvwebbrowser.utils.StreamWorkDir
 import kotlinx.coroutines.Dispatchers
@@ -202,7 +202,7 @@ class DownloadService : Service() {
                 Log.d(TAG, "Start to download ${download.url}")
                 task = when {
                     stream != null -> StreamDownloadTask(download, stream, taskListener, folder)
-                    download.streamSpec != null -> HlsDownloadTask(download, taskListener, folder, proxy)
+                    download.streamSpec != null -> VideoStreamDownloadTask(download, taskListener, folder, proxy)
                     else -> HttpDownloadTask(download, taskListener, folder, proxy = proxy)
                 }
                 tasks[id] = task
@@ -239,7 +239,7 @@ class DownloadService : Service() {
                 download.refererHeader = referer
                 Log.d(TAG, "Resume to download ${download.url} from ${download.bytesReceived}")
                 //a stream goes on with the segments it does not have yet
-                val task = if (download.streamSpec != null) HlsDownloadTask(download, taskListener, folder, proxy)
+                val task = if (download.streamSpec != null) VideoStreamDownloadTask(download, taskListener, folder, proxy)
                     else HttpDownloadTask(download, taskListener, folder, resume = true, proxy = proxy)
                 tasks[id] = task
                 started = true
