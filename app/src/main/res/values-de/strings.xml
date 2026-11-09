@@ -403,7 +403,6 @@
   </plurals>
   <string name="interface_mode">Oberfläche</string>
 
-  <string name="send_menu">Vom Smartphone senden</string>
   <string name="send_title">An diesen Fernseher senden</string>
   <string name="send_scan_title">Mit dem Smartphone scannen</string>
   <string name="send_or_open">oder auf einem beliebigen Gerät öffnen:</string>

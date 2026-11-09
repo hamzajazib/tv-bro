@@ -391,7 +391,6 @@
   </plurals>
   <string name="interface_mode">Giao diện người dùng</string>
 
-  <string name="send_menu">Gửi từ điện thoại</string>
   <string name="send_title">Gửi tới TV này</string>
   <string name="send_scan_title">Quét bằng điện thoại</string>
   <string name="send_or_open">hoặc mở trên bất kỳ thiết bị nào:</string>

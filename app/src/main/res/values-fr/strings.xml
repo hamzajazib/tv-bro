@@ -418,7 +418,6 @@
     </plurals>
     <string name="interface_mode">Interface</string>
 
-    <string name="send_menu">Envoyer depuis le téléphone</string>
     <string name="send_title">Envoyer vers ce téléviseur</string>
     <string name="send_scan_title">Scannez avec un téléphone</string>
     <string name="send_or_open">ou ouvrez sur n’importe quel appareil :</string>

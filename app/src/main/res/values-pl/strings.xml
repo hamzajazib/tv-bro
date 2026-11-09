@@ -430,7 +430,6 @@
   </plurals>
   <string name="interface_mode">Interfejs</string>
 
-  <string name="send_menu">Wyślij z telefonu</string>
   <string name="send_title">Wyślij na ten telewizor</string>
   <string name="send_scan_title">Zeskanuj telefonem</string>
   <string name="send_or_open">lub otwórz na dowolnym urządzeniu:</string>

@@ -404,7 +404,6 @@
   </plurals>
   <string name="interface_mode">رابط کاربری</string>
 
-  <string name="send_menu">ارسال از گوشی</string>
   <string name="send_title">ارسال به این تلویزیون</string>
   <string name="send_scan_title">با گوشی اسکن کنید</string>
   <string name="send_or_open">یا در هر دستگاهی باز کنید:</string>

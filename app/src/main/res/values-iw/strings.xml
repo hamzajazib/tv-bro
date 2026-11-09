@@ -430,7 +430,6 @@
   </plurals>
   <string name="interface_mode">ממשק</string>
 
-  <string name="send_menu">שליחה מהטלפון</string>
   <string name="send_title">שליחה לטלוויזיה הזו</string>
   <string name="send_scan_title">סרקו עם טלפון</string>
   <string name="send_or_open">או פתחו בכל מכשיר:</string>

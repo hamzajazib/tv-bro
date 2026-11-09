@@ -519,12 +519,12 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
         val items = listOf(
             PopupMenuView.Item(R.drawable.ic_search, activity.getString(R.string.find_in_page)) { showFindInPage() },
             PopupMenuView.Item(R.drawable.ic_history, activity.getString(R.string.history)) { showHistory() },
-            PopupMenuView.Item(R.drawable.ic_phone, activity.getString(R.string.send_menu)) { showSendScreen() },
+            PopupMenuView.Item(R.drawable.ic_devices, activity.getString(R.string.send_title)) { showSendScreen() },
             PopupMenuView.Item(R.drawable.ic_settings, activity.getString(R.string.settings)) { showSettings() }
         )
         vb.vPopupMenu.show(vb.vActionBar.moreButton, items, alignEnd = true, endAlignTo = vb.vActionBar.functionsGroup,
             gap = activity.resources.getDimensionPixelSize(R.dimen.ds_site_panel_gap),
-            width = R.dimen.ds_size_tab_menu_width, activateAnchor = true)
+            width = R.dimen.ds_size_more_menu_width, activateAnchor = true)
     }
 
     override fun showFavorites() {
@@ -822,7 +822,7 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
 
     /** The files go to the downloads */
     private val sentFiles = SentFileReceiver(activity, host, { TVBro.container.data.downloads }) { message ->
-        NotificationView.show(vb.rlRoot, R.drawable.ic_phone, message)
+        NotificationView.show(vb.rlRoot, R.drawable.ic_devices, message)
     }
 
     /** What came lately, the newest first, for the screen of sending */
@@ -847,7 +847,7 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
         }
         val url = SendRules.urlOf(text, AppContext.provideConfig().searchEngineURL.value)
         if (url == null) {
-            NotificationView.show(vb.rlRoot, R.drawable.ic_phone, activity.getString(R.string.send_cannot_open))
+            NotificationView.show(vb.rlRoot, R.drawable.ic_devices, activity.getString(R.string.send_cannot_open))
             return
         }
         addReceived(text)
@@ -866,7 +866,7 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
         } else if (open == null) {
             controller.addBackgroundTab(url, text, controller.tabsStates.size)
         }
-        NotificationView.show(vb.rlRoot, R.drawable.ic_phone, if (from.isEmpty()) activity.getString(R.string.send_page_opened)
+        NotificationView.show(vb.rlRoot, R.drawable.ic_devices, if (from.isEmpty()) activity.getString(R.string.send_page_opened)
             else activity.getString(R.string.send_page_opened_from, from))
     }
 

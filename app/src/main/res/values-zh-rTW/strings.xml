@@ -391,7 +391,6 @@
     </plurals>
     <string name="interface_mode">介面</string>
 
-    <string name="send_menu">從手機傳送</string>
     <string name="send_title">傳送到這台電視</string>
     <string name="send_scan_title">用手機掃描</string>
     <string name="send_or_open">或在任何裝置上開啟：</string>

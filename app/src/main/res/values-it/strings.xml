@@ -417,7 +417,6 @@
   </plurals>
   <string name="interface_mode">Interfaccia</string>
 
-  <string name="send_menu">Invia dal telefono</string>
   <string name="send_title">Invia a questa TV</string>
   <string name="send_scan_title">Scansiona con un telefono</string>
   <string name="send_or_open">oppure apri su qualsiasi dispositivo:</string>

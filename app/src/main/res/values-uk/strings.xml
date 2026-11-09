@@ -430,7 +430,6 @@
   </plurals>
   <string name="interface_mode">Інтерфейс</string>
 
-  <string name="send_menu">Надіслати з телефона</string>
   <string name="send_title">Надіслати на цей TV</string>
   <string name="send_scan_title">Відскануйте телефоном</string>
   <string name="send_or_open">або відкрийте на будь-якому пристрої:</string>

@@ -431,7 +431,6 @@
     </plurals>
     <string name="interface_mode">Rozhraní</string>
 
-    <string name="send_menu">Odeslat z telefonu</string>
     <string name="send_title">Odeslat do této televize</string>
     <string name="send_scan_title">Naskenujte telefonem</string>
     <string name="send_or_open">nebo otevřete na libovolném zařízení:</string>

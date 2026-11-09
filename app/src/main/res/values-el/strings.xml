@@ -405,8 +405,7 @@
     </plurals>
     <string name="interface_mode">Περιβάλλον</string>
 
-    <string name="send_menu">Αποστολή από κινητό</string>
-    <string name="send_title">Αποστολή σε αυτήν την τηλεόραση</string>
+    <string name="send_title">Αποστολή στην τηλεόραση</string>
     <string name="send_scan_title">Σαρώστε με κινητό</string>
     <string name="send_or_open">ή ανοίξτε σε οποιαδήποτε συσκευή:</string>
     <string name="send_code_waiting">Λήψη σύντομης διεύθυνσης…</string>
