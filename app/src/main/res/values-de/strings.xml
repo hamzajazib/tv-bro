@@ -236,7 +236,10 @@
   <string name="clear_site_data">Websitedaten löschen…</string>
   <string name="clear_site_data_caption">Cookies, Anmeldungen und gespeicherte Daten</string>
   <string name="clear_site_data_title">Daten von %s löschen?</string>
-  <string name="clear_site_data_message">Dadurch wird von diesem Gerät entfernt:\n\n• Cookies: Sie werden von der Website abgemeldet\n• gespeicherte Daten (Local Storage, IndexedDB und Ähnliches)\n• der Cache der Website\n\nDie Einstellungen der Website und ihr Verlauf bleiben erhalten.</string>
+  <string name="clear_site_data_cookies">Cookies: Sie werden von der Website abgemeldet</string>
+  <string name="clear_site_data_storage">Gespeicherte Daten (Local Storage, IndexedDB und Ähnliches)</string>
+  <string name="clear_site_data_cache">Cache der Website</string>
+  <string name="clear_site_data_keeps">Die Einstellungen der Website und ihr Verlauf bleiben erhalten.</string>
   <string name="clear_site_data_failed">Die Websitedaten konnten nicht gelöscht werden</string>
   <string name="default_site_view">Standard-Website-Ansicht</string>
   <array name="site_views">

@@ -251,7 +251,10 @@
   <string name="clear_site_data">Wyczyść dane witryny…</string>
   <string name="clear_site_data_caption">Pliki cookie, logowania i zapisane dane</string>
   <string name="clear_site_data_title">Wyczyścić dane %s?</string>
-  <string name="clear_site_data_message">Z tego urządzenia zostaną usunięte:\n\n• pliki cookie: zostaniesz wylogowany z witryny\n• zapisane dane (local storage, IndexedDB itp.)\n• pamięć podręczna witryny\n\nUstawienia witryny i jej historia pozostaną.</string>
+  <string name="clear_site_data_cookies">Pliki cookie: zostaniesz wylogowany z witryny</string>
+  <string name="clear_site_data_storage">Zapisane dane (local storage, IndexedDB itp.)</string>
+  <string name="clear_site_data_cache">Pamięć podręczna witryny</string>
+  <string name="clear_site_data_keeps">Ustawienia witryny i jej historia pozostaną.</string>
   <string name="clear_site_data_failed">Nie udało się wyczyścić danych witryny</string>
   <string name="default_site_view">Domyślny widok witryn</string>
   <array name="site_views">

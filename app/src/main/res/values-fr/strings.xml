@@ -245,7 +245,10 @@
     <string name="clear_site_data">Effacer les données du site…</string>
     <string name="clear_site_data_caption">Cookies, connexions et données stockées</string>
     <string name="clear_site_data_title">Effacer les données de %s ?</string>
-    <string name="clear_site_data_message">Ceci supprime de cet appareil :\n\n• les cookies : vous serez déconnecté du site\n• les données stockées (local storage, IndexedDB, etc.)\n• le cache du site\n\nLes paramètres du site et son historique sont conservés.</string>
+    <string name="clear_site_data_cookies">Cookies : vous serez déconnecté du site</string>
+    <string name="clear_site_data_storage">Données stockées (local storage, IndexedDB, etc.)</string>
+    <string name="clear_site_data_cache">Cache du site</string>
+    <string name="clear_site_data_keeps">Les paramètres du site et son historique sont conservés.</string>
     <string name="clear_site_data_failed">Impossible d’effacer les données du site</string>
     <string name="default_site_view">Affichage des sites par défaut</string>
     <array name="site_views">

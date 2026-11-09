@@ -238,7 +238,10 @@
     <string name="clear_site_data">Διαγραφή δεδομένων ιστοτόπου…</string>
     <string name="clear_site_data_caption">Cookies, συνδέσεις και αποθηκευμένα δεδομένα</string>
     <string name="clear_site_data_title">Διαγραφή των δεδομένων του %s;</string>
-    <string name="clear_site_data_message">Θα αφαιρεθούν από αυτή τη συσκευή:\n\n• τα cookies: θα αποσυνδεθείτε από τον ιστότοπο\n• τα αποθηκευμένα δεδομένα (local storage, IndexedDB και παρόμοια)\n• η κρυφή μνήμη του ιστοτόπου\n\nΟι ρυθμίσεις του ιστοτόπου και το ιστορικό του παραμένουν.</string>
+    <string name="clear_site_data_cookies">Cookies: θα αποσυνδεθείτε από τον ιστότοπο</string>
+    <string name="clear_site_data_storage">Αποθηκευμένα δεδομένα (local storage, IndexedDB και παρόμοια)</string>
+    <string name="clear_site_data_cache">Κρυφή μνήμη του ιστοτόπου</string>
+    <string name="clear_site_data_keeps">Οι ρυθμίσεις του ιστοτόπου και το ιστορικό του παραμένουν.</string>
     <string name="clear_site_data_failed">Δεν ήταν δυνατή η διαγραφή των δεδομένων του ιστοτόπου</string>
     <string name="default_site_view">Προεπιλεγμένη προβολή ιστοτόπων</string>
     <array name="site_views">

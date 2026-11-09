@@ -6,34 +6,62 @@ import android.webkit.WebStorage
 import android.webkit.WebView
 import androidx.webkit.WebStorageCompat
 import androidx.webkit.WebViewFeature
+import com.phlox.tvwebbrowser.webengine.SiteDataKind
+import java.net.URI
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 /**
- * Clears the data of one site in WebView. Newer WebViews do it themselves for the whole site (the domain
- * the host belongs to, with its subdomains). Older ones have no removal of the cookies of one site: they
- * are expired one by one, the storage of the host's origins is deleted, and the whole cache (it holds no
- * data of the user) is cleared.
+ * Clears the data of one site in WebView. Newer WebViews clear all of it themselves for the whole site (the
+ * domain the host belongs to, with its subdomains), but only all at once. Otherwise each kind is cleared
+ * apart: WebView has no removal of the cookies of one site, so they are expired one by one; the storage of
+ * the origins of the host and its subdomains is deleted; and the whole cache (it holds no data of the user)
+ * is cleared, as WebView has no cache of one site.
  */
 internal object WebViewSiteData {
-    suspend fun clear(context: Context, host: String) {
+    suspend fun clear(context: Context, host: String, kinds: Set<SiteDataKind>) {
         val storage = WebStorage.getInstance()
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.DELETE_BROWSING_DATA)) {
+        if (kinds.containsAll(SiteDataKind.ALL) &&
+            WebViewFeature.isFeatureSupported(WebViewFeature.DELETE_BROWSING_DATA)) {
             suspendCoroutine { cont ->
                 WebStorageCompat.deleteBrowsingDataForSite(storage, host) { cont.resume(Unit) }
             }
             return
         }
-        val cookies = CookieManager.getInstance()
-        for (secure in listOf(true, false)) {
-            val origin = (if (secure) "https://" else "http://") + host
-            for (expiry in SiteCookies.expiries(host, secure, cookies.getCookie("$origin/"))) {
-                cookies.setCookie("$origin/", expiry)
+        val hostOrigins = listOf("https://$host", "http://$host")
+        if (SiteDataKind.COOKIES in kinds) {
+            val cookies = CookieManager.getInstance()
+            for (origin in hostOrigins) {
+                val secure = origin.startsWith("https:")
+                for (expiry in SiteCookies.expiries(host, secure, cookies.getCookie("$origin/"))) {
+                    cookies.setCookie("$origin/", expiry)
+                }
             }
-            storage.deleteOrigin(origin)
+            cookies.flush()
         }
-        cookies.flush()
-        WebView(context).clearCache(true)
+        if (SiteDataKind.STORAGE in kinds) {
+            //getOrigins lists the origins with quota managed storage; local storage alone may be missing there
+            val origins = LinkedHashSet(hostOrigins)
+            origins += SiteOrigins.ofHost(host, storageOrigins(storage))
+            for (origin in origins) storage.deleteOrigin(origin)
+        }
+        if (SiteDataKind.CACHE in kinds) {
+            WebView(context).clearCache(true)
+        }
+    }
+
+    private suspend fun storageOrigins(storage: WebStorage): Collection<String> = suspendCoroutine { cont ->
+        storage.getOrigins { origins ->
+            cont.resume(origins?.values?.mapNotNull { (it as? WebStorage.Origin)?.origin } ?: emptyList())
+        }
+    }
+}
+
+internal object SiteOrigins {
+    /** The [origins] ("https://a.com:8080") of [host] and its subdomains */
+    fun ofHost(host: String, origins: Collection<String>): List<String> = origins.filter { origin ->
+        val originHost = runCatching { URI(origin).host }.getOrNull() ?: return@filter false
+        originHost.equals(host, ignoreCase = true) || originHost.endsWith(".$host", ignoreCase = true)
     }
 }
 

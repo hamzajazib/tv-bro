@@ -244,7 +244,10 @@
   <string name="clear_site_data">Cancella dati del sito…</string>
   <string name="clear_site_data_caption">Cookie, accessi e dati memorizzati</string>
   <string name="clear_site_data_title">Cancellare i dati di %s?</string>
-  <string name="clear_site_data_message">Da questo dispositivo verranno rimossi:\n\n• i cookie: uscirai dall\'account sul sito\n• i dati memorizzati (local storage, IndexedDB e simili)\n• la cache del sito\n\nLe impostazioni del sito e la sua cronologia restano.</string>
+  <string name="clear_site_data_cookies">Cookie: uscirai dall\'account sul sito</string>
+  <string name="clear_site_data_storage">Dati memorizzati (local storage, IndexedDB e simili)</string>
+  <string name="clear_site_data_cache">Cache del sito</string>
+  <string name="clear_site_data_keeps">Le impostazioni del sito e la sua cronologia restano.</string>
   <string name="clear_site_data_failed">Impossibile cancellare i dati del sito</string>
   <string name="default_site_view">Visualizzazione predefinita dei siti</string>
   <array name="site_views">

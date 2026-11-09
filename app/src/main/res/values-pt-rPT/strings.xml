@@ -245,7 +245,10 @@
     <string name="clear_site_data">Limpar dados do site…</string>
     <string name="clear_site_data_caption">Cookies, inícios de sessão e dados guardados</string>
     <string name="clear_site_data_title">Limpar os dados de %s?</string>
-    <string name="clear_site_data_message">Isto remove deste dispositivo:\n\n• os cookies: terminará a sessão no site\n• os dados guardados (local storage, IndexedDB e semelhantes)\n• a cache do site\n\nAs definições do site e o seu histórico mantêm-se.</string>
+    <string name="clear_site_data_cookies">Cookies: terminará a sessão no site</string>
+    <string name="clear_site_data_storage">Dados guardados (local storage, IndexedDB e semelhantes)</string>
+    <string name="clear_site_data_cache">Cache do site</string>
+    <string name="clear_site_data_keeps">As definições do site e o seu histórico mantêm-se.</string>
     <string name="clear_site_data_failed">Não foi possível limpar os dados do site</string>
     <string name="default_site_view">Visualização predefinida dos sites</string>
     <array name="site_views">

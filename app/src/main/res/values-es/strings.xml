@@ -245,7 +245,10 @@
     <string name="clear_site_data">Borrar datos del sitio…</string>
     <string name="clear_site_data_caption">Cookies, inicios de sesión y datos guardados</string>
     <string name="clear_site_data_title">¿Borrar los datos de %s?</string>
-    <string name="clear_site_data_message">Se eliminará de este dispositivo:\n\n• las cookies: se cerrará tu sesión en el sitio\n• los datos guardados (local storage, IndexedDB y similares)\n• la caché del sitio\n\nLos ajustes del sitio y su historial se mantienen.</string>
+    <string name="clear_site_data_cookies">Cookies: se cerrará tu sesión en el sitio</string>
+    <string name="clear_site_data_storage">Datos guardados (local storage, IndexedDB y similares)</string>
+    <string name="clear_site_data_cache">Caché del sitio</string>
+    <string name="clear_site_data_keeps">Los ajustes del sitio y su historial se mantienen.</string>
     <string name="clear_site_data_failed">No se han podido borrar los datos del sitio</string>
     <string name="default_site_view">Vista predeterminada de los sitios</string>
     <array name="site_views">

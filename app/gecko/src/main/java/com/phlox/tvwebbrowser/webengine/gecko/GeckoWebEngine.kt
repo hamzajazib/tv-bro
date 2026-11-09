@@ -23,6 +23,7 @@ import com.phlox.tvwebbrowser.webengine.EngineSpecificSetting
 import com.phlox.tvwebbrowser.webengine.WebEngineCallbacks
 import com.phlox.tvwebbrowser.webengine.VirtualCursorSupport
 import com.phlox.tvwebbrowser.webengine.SiteViewSupport
+import com.phlox.tvwebbrowser.webengine.SiteDataKind
 import com.phlox.tvwebbrowser.webengine.CursorModes
 import com.phlox.tvwebbrowser.utils.HardwareCodecs
 import com.phlox.tvwebbrowser.webengine.FindInPageSupport
@@ -219,10 +220,15 @@ class GeckoWebEngine(val tab: BrowserTab): WebEngine, VirtualCursorSupport, Site
 
                 override fun supportsSiteDataClearing(): Boolean = true
 
-                override suspend fun clearSiteData(context: Context, host: String) {
+                override suspend fun clearSiteData(context: Context, host: String, kinds: Set<SiteDataKind>) {
                     //not the permissions (SITE_DATA has them) and not the history
-                    val flags = StorageController.ClearFlags.COOKIES or StorageController.ClearFlags.DOM_STORAGES or
-                        StorageController.ClearFlags.AUTH_SESSIONS or StorageController.ClearFlags.ALL_CACHES
+                    var flags = 0L
+                    if (SiteDataKind.COOKIES in kinds) {
+                        flags = flags or StorageController.ClearFlags.COOKIES or StorageController.ClearFlags.AUTH_SESSIONS
+                    }
+                    if (SiteDataKind.STORAGE in kinds) flags = flags or StorageController.ClearFlags.DOM_STORAGES
+                    if (SiteDataKind.CACHE in kinds) flags = flags or StorageController.ClearFlags.ALL_CACHES
+                    if (flags == 0L) return
                     suspendCoroutine { cont ->
                         runtime.storageController.clearDataFromHost(host, flags).then({
                             cont.resume(Unit)

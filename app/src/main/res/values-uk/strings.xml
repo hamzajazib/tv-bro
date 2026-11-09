@@ -251,7 +251,10 @@
   <string name="clear_site_data">Очистити дані сайту…</string>
   <string name="clear_site_data_caption">Cookie, входи в акаунти та збережені дані</string>
   <string name="clear_site_data_title">Очистити дані %s?</string>
-  <string name="clear_site_data_message">З цього пристрою буде видалено:\n\n• cookie: ви вийдете з акаунта на сайті\n• збережені дані (local storage, IndexedDB тощо)\n• кеш сайту\n\nНалаштування сайту та його історія залишаться.</string>
+  <string name="clear_site_data_cookies">Cookie: ви вийдете з акаунта на сайті</string>
+  <string name="clear_site_data_storage">Збережені дані (local storage, IndexedDB тощо)</string>
+  <string name="clear_site_data_cache">Кеш сайту</string>
+  <string name="clear_site_data_keeps">Налаштування сайту та його історія залишаться.</string>
   <string name="clear_site_data_failed">Не вдалося очистити дані сайту</string>
   <string name="default_site_view">Типовий вигляд сайтів</string>
   <array name="site_views">

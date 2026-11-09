@@ -252,7 +252,10 @@
     <string name="clear_site_data">Vymazat data webu…</string>
     <string name="clear_site_data_caption">Soubory cookie, přihlášení a uložená data</string>
     <string name="clear_site_data_title">Vymazat data webu %s?</string>
-    <string name="clear_site_data_message">Z tohoto zařízení se odstraní:\n\n• soubory cookie: budete z webu odhlášeni\n• uložená data (local storage, IndexedDB a podobně)\n• mezipaměť webu\n\nNastavení webu a jeho historie zůstanou.</string>
+    <string name="clear_site_data_cookies">Soubory cookie: budete z webu odhlášeni</string>
+    <string name="clear_site_data_storage">Uložená data (local storage, IndexedDB a podobně)</string>
+    <string name="clear_site_data_cache">Mezipaměť webu</string>
+    <string name="clear_site_data_keeps">Nastavení webu a jeho historie zůstanou.</string>
     <string name="clear_site_data_failed">Data webu se nepodařilo vymazat</string>
     <string name="default_site_view">Výchozí zobrazení webů</string>
     <array name="site_views">

@@ -230,7 +230,10 @@
   <string name="clear_site_data">Xóa dữ liệu trang web…</string>
   <string name="clear_site_data_caption">Cookie, thông tin đăng nhập và dữ liệu đã lưu</string>
   <string name="clear_site_data_title">Xóa dữ liệu của %s?</string>
-  <string name="clear_site_data_message">Thao tác này xóa khỏi thiết bị:\n\n• cookie: bạn sẽ bị đăng xuất khỏi trang web\n• dữ liệu đã lưu (local storage, IndexedDB và tương tự)\n• bộ nhớ đệm của trang web\n\nCài đặt và lịch sử của trang web vẫn được giữ lại.</string>
+  <string name="clear_site_data_cookies">Cookie: bạn sẽ bị đăng xuất khỏi trang web</string>
+  <string name="clear_site_data_storage">Dữ liệu đã lưu (local storage, IndexedDB và tương tự)</string>
+  <string name="clear_site_data_cache">Bộ nhớ đệm của trang web</string>
+  <string name="clear_site_data_keeps">Cài đặt và lịch sử của trang web vẫn được giữ lại.</string>
   <string name="clear_site_data_failed">Không thể xóa dữ liệu trang web</string>
   <string name="default_site_view">Chế độ xem trang web mặc định</string>
   <array name="site_views">

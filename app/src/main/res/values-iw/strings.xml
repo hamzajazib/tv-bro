@@ -251,7 +251,10 @@
   <string name="clear_site_data">נקה נתוני אתר…</string>
   <string name="clear_site_data_caption">קובצי Cookie, כניסות ונתונים שמורים</string>
   <string name="clear_site_data_title">לנקות את הנתונים של %s?</string>
-  <string name="clear_site_data_message">יוסרו מהמכשיר הזה:\n\n• קובצי Cookie: תצא מהחשבון באתר\n• נתונים שמורים (local storage, IndexedDB וכדומה)\n• המטמון של האתר\n\nההגדרות של האתר וההיסטוריה שלו נשארות.</string>
+  <string name="clear_site_data_cookies">קובצי Cookie: תצא מהחשבון באתר</string>
+  <string name="clear_site_data_storage">נתונים שמורים (local storage, IndexedDB וכדומה)</string>
+  <string name="clear_site_data_cache">המטמון של האתר</string>
+  <string name="clear_site_data_keeps">ההגדרות של האתר וההיסטוריה שלו נשארות.</string>
   <string name="clear_site_data_failed">לא ניתן לנקות את נתוני האתר</string>
   <string name="default_site_view">תצוגת ברירת המחדל של אתרים</string>
   <array name="site_views">

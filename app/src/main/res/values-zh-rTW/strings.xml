@@ -230,7 +230,10 @@
     <string name="clear_site_data">清除網站資料…</string>
     <string name="clear_site_data_caption">Cookie、登入狀態和儲存的資料</string>
     <string name="clear_site_data_title">要清除 %s 的資料嗎？</string>
-    <string name="clear_site_data_message">將從此裝置移除：\n\n• Cookie：您將登出該網站\n• 儲存的資料（local storage、IndexedDB 等）\n• 該網站的快取\n\n網站設定和歷史紀錄會保留。</string>
+    <string name="clear_site_data_cookies">Cookie：您將登出該網站</string>
+    <string name="clear_site_data_storage">儲存的資料（local storage、IndexedDB 等）</string>
+    <string name="clear_site_data_cache">該網站的快取</string>
+    <string name="clear_site_data_keeps">網站設定和歷史紀錄會保留。</string>
     <string name="clear_site_data_failed">無法清除網站資料</string>
     <string name="default_site_view">預設網站檢視</string>
     <array name="site_views">

@@ -237,7 +237,10 @@
   <string name="clear_site_data">پاک کردن داده‌های سایت…</string>
   <string name="clear_site_data_caption">کوکی‌ها، ورودها و داده‌های ذخیره‌شده</string>
   <string name="clear_site_data_title">داده‌های %s پاک شود؟</string>
-  <string name="clear_site_data_message">این موارد از این دستگاه حذف می‌شوند:\n\n• کوکی‌ها: از سایت خارج می‌شوید\n• داده‌های ذخیره‌شده (local storage، IndexedDB و مانند آن)\n• حافظه پنهان سایت\n\nتنظیمات سایت و تاریخچه آن می‌مانند.</string>
+  <string name="clear_site_data_cookies">کوکی‌ها: از سایت خارج می‌شوید</string>
+  <string name="clear_site_data_storage">داده‌های ذخیره‌شده (local storage، IndexedDB و مانند آن)</string>
+  <string name="clear_site_data_cache">حافظه پنهان سایت</string>
+  <string name="clear_site_data_keeps">تنظیمات سایت و تاریخچه آن می‌مانند.</string>
   <string name="clear_site_data_failed">پاک کردن داده‌های سایت ممکن نشد</string>
   <string name="default_site_view">نمای پیش‌فرض سایت‌ها</string>
   <array name="site_views">

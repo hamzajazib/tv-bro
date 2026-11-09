@@ -26,6 +26,7 @@ import com.phlox.tvwebbrowser.utils.observable.ObservableList
 import com.phlox.tvwebbrowser.utils.observable.ObservableValue
 import com.phlox.tvwebbrowser.webengine.DownloadRequest
 import com.phlox.tvwebbrowser.webengine.EngineUiHost
+import com.phlox.tvwebbrowser.webengine.SiteDataKind
 import com.phlox.tvwebbrowser.webengine.TabEngineEvents
 import com.phlox.tvwebbrowser.webengine.WebEngine
 import com.phlox.tvwebbrowser.webengine.WebEngineCallbacks
@@ -577,12 +578,13 @@ class BrowserController : ActiveModel() {
     }
 
     /**
-     * Removes the cookies, the stored data and the cache of the tab's site (its settings and history stay)
-     * and reloads the tab.
+     * Removes the [kinds] of data of the tab's site (cookies, stored data, cache; its settings and history
+     * stay) and reloads the tab.
      */
-    suspend fun clearSiteData(tab: BrowserTab) {
+    suspend fun clearSiteData(tab: BrowserTab, kinds: Set<SiteDataKind> = SiteDataKind.ALL) {
+        if (kinds.isEmpty()) return
         val host = hostNameOf(tab) ?: return
-        WebEngineFactory.clearSiteData(AppContext.get(), host)
+        WebEngineFactory.clearSiteData(AppContext.get(), host, kinds)
         if (tab == currentTab.value && tab.isWebEngineCreated) {
             tab.webEngine.reload()
         }

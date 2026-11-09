@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Process
 import android.util.Log
+import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -21,6 +22,7 @@ import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
@@ -55,9 +57,11 @@ import com.phlox.tvwebbrowser.utils.VoiceSearchHelper
 import com.phlox.tvwebbrowser.utils.launchForResult
 import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
 import com.phlox.tvwebbrowser.utils.sameDay
+import com.phlox.tvwebbrowser.utils.themeColor
 import com.phlox.tvwebbrowser.webengine.DownloadRequest
 import com.phlox.tvwebbrowser.player.PictureInPicturePlayback
 import com.phlox.tvwebbrowser.webengine.MediaCommand
+import com.phlox.tvwebbrowser.webengine.SiteDataKind
 import com.phlox.tvwebbrowser.webengine.WebEngineFactory
 import com.phlox.tvwebbrowser.webengine.EngineUiHost
 import com.phlox.tvwebbrowser.widgets.cursor.CursorDrawerDelegate
@@ -329,13 +333,33 @@ open class MainActivity : AppCompatActivity(), BrowserShell.Host {
         val tab = controller.currentTab.value ?: return
         val host = controller.currentTabState.value.host
         if (host.isEmpty()) return
-        AlertDialog.Builder(this)
+        val kinds = listOf(SiteDataKind.COOKIES, SiteDataKind.STORAGE, SiteDataKind.CACHE)
+        val labels = arrayOf<CharSequence>(getString(R.string.clear_site_data_cookies),
+            getString(R.string.clear_site_data_storage), getString(R.string.clear_site_data_cache))
+        val checked = BooleanArray(kinds.size) { true }
+        val builder = AlertDialog.Builder(this)
+        //a dialog with a list has no message: what stays goes under the list
+        val padding = TypedValue().let {
+            builder.context.theme.resolveAttribute(androidx.appcompat.R.attr.dialogPreferredPadding, it, true)
+            TypedValue.complexToDimensionPixelSize(it.data, resources.displayMetrics)
+        }
+        val keeps = TextView(builder.context, null, 0, R.style.Widget_TVBro_Text_Body).apply {
+            setText(R.string.clear_site_data_keeps)
+            setTextColor(context.themeColor(R.attr.tbColorDsInk))
+            setPaddingRelative(padding, padding / 3, padding, 0)
+        }
+        builder
             .setTitle(getString(R.string.clear_site_data_title, host))
-            .setMessage(R.string.clear_site_data_message)
+            .setMultiChoiceItems(labels, checked) { d, _, _ ->
+                //the dialog keeps [checked] up to date
+                (d as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = checked.any { it }
+            }
+            .setView(keeps)
             .setPositiveButton(R.string.clear) { _, _ ->
+                val chosen = kinds.filterIndexed { i, _ -> checked[i] }.toSet()
                 lifecycleScope.launch {
                     try {
-                        controller.clearSiteData(tab)
+                        controller.clearSiteData(tab, chosen)
                     } catch (e: Exception) {
                         Log.e(TAG, "clearSiteData", e)
                         Utils.showToast(this@MainActivity, R.string.clear_site_data_failed)
@@ -343,7 +367,7 @@ open class MainActivity : AppCompatActivity(), BrowserShell.Host {
                 }
             }
             .setNegativeButton(R.string.cancel, null)
-            .show()
+        builder.show()
     }
 
     override fun download(request: DownloadRequest) = downloadLauncher.download(request)

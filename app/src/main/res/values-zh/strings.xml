@@ -230,7 +230,10 @@
   <string name="clear_site_data">清除网站数据…</string>
   <string name="clear_site_data_caption">Cookie、登录状态和存储的数据</string>
   <string name="clear_site_data_title">要清除 %s 的数据吗？</string>
-  <string name="clear_site_data_message">将从此设备中删除：\n\n• Cookie：您将退出该网站的登录\n• 存储的数据（local storage、IndexedDB 等）\n• 该网站的缓存\n\n网站设置和浏览历史记录会保留。</string>
+  <string name="clear_site_data_cookies">Cookie：您将退出该网站的登录</string>
+  <string name="clear_site_data_storage">存储的数据（local storage、IndexedDB 等）</string>
+  <string name="clear_site_data_cache">该网站的缓存</string>
+  <string name="clear_site_data_keeps">网站设置和浏览历史记录会保留。</string>
   <string name="clear_site_data_failed">无法清除网站数据</string>
   <string name="default_site_view">默认网站视图</string>
   <array name="site_views">

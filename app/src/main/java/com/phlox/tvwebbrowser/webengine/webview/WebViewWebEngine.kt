@@ -33,6 +33,7 @@ import com.phlox.tvwebbrowser.webengine.WebEngineProviderCallback
 import com.phlox.tvwebbrowser.webengine.WebEngineCallbacks
 import com.phlox.tvwebbrowser.webengine.VirtualCursorSupport
 import com.phlox.tvwebbrowser.webengine.SiteViewSupport
+import com.phlox.tvwebbrowser.webengine.SiteDataKind
 import com.phlox.tvwebbrowser.webengine.CursorModes
 import com.phlox.tvwebbrowser.webengine.FindInPageSupport
 import com.phlox.tvwebbrowser.webengine.FindResult
@@ -608,8 +609,8 @@ class WebViewWebEngine(val tab: BrowserTab) : WebEngine, VirtualCursorSupport, S
 
                 override fun supportsSiteDataClearing(): Boolean = true
 
-                override suspend fun clearSiteData(context: Context, host: String) {
-                    WebViewSiteData.clear(context, host)
+                override suspend fun clearSiteData(context: Context, host: String, kinds: Set<SiteDataKind>) {
+                    WebViewSiteData.clear(context, host, kinds)
                 }
 
                 override fun onViewCreationFailed(activity: Activity, error: Throwable) {

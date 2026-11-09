@@ -251,7 +251,10 @@
   <string name="clear_site_data">Очистить данные сайта…</string>
   <string name="clear_site_data_caption">Cookie, входы в аккаунты и сохранённые данные</string>
   <string name="clear_site_data_title">Очистить данные %s?</string>
-  <string name="clear_site_data_message">С этого устройства будут удалены:\n\n• cookie: вы выйдете из аккаунта на сайте\n• сохранённые данные (local storage, IndexedDB и т. п.)\n• кеш сайта\n\nНастройки сайта и его история останутся.</string>
+  <string name="clear_site_data_cookies">Cookie: вы выйдете из аккаунта на сайте</string>
+  <string name="clear_site_data_storage">Сохранённые данные (local storage, IndexedDB и т. п.)</string>
+  <string name="clear_site_data_cache">Кеш сайта</string>
+  <string name="clear_site_data_keeps">Настройки сайта и его история останутся.</string>
   <string name="clear_site_data_failed">Не удалось очистить данные сайта</string>
   <string name="default_site_view">Вид сайтов по умолчанию</string>
   <array name="site_views">

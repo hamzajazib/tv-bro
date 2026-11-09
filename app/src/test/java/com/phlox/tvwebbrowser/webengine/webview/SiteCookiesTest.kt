@@ -7,6 +7,13 @@ class SiteCookiesTest {
     private val expired = "Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/"
 
     @Test
+    fun storageOriginsAreThoseOfTheHostAndItsSubdomains() {
+        assertEquals(listOf("https://example.com", "http://example.com:8080", "https://m.EXAMPLE.com"),
+            SiteOrigins.ofHost("example.com", listOf("https://example.com", "http://example.com:8080",
+                "https://m.EXAMPLE.com", "https://notexample.com", "https://example.com.evil.net", "bad origin")))
+    }
+
+    @Test
     fun eachCookieExpiresForTheHostAndTheDomainsAboveIt() {
         assertEquals(listOf(
             "sid=; $expired; Secure",

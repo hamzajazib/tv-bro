@@ -52,10 +52,11 @@ interface WebEngineProviderCallback {
     fun supportsSiteDataClearing(): Boolean = false
 
     /**
-     * Removes the cookies (the user is signed out), the stored data (local storage, IndexedDB and the like)
-     * and the cache of the site of [host]. The browser keeps the settings and the history of the site.
+     * Removes the [kinds] of data of the site of [host]: its cookies (the user is signed out), its stored data
+     * (local storage, IndexedDB and the like) and its cache; the others stay. The browser keeps the settings
+     * and the history of the site.
      */
-    suspend fun clearSiteData(context: Context, host: String) {}
+    suspend fun clearSiteData(context: Context, host: String, kinds: Set<SiteDataKind>) {}
 
     /**
      * Makes all pages of the engine go through [proxy] (directly when null), except the local addresses of
@@ -140,8 +141,9 @@ object WebEngineFactory {
 
     fun supportsSiteDataClearing(): Boolean = selectedProvider()?.callback?.supportsSiteDataClearing() ?: false
 
-    suspend fun clearSiteData(context: Context, host: String) {
-        initializedProvider.callback.clearSiteData(context, host)
+    suspend fun clearSiteData(context: Context, host: String, kinds: Set<SiteDataKind>) {
+        if (kinds.isEmpty()) return
+        initializedProvider.callback.clearSiteData(context, host, kinds)
     }
 
     /** See [WebEngineProviderCallback.applyProxy]; does nothing before [initialize] (it applies the proxy itself) */

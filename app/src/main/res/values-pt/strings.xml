@@ -245,7 +245,10 @@
     <string name="clear_site_data">Limpar dados do site…</string>
     <string name="clear_site_data_caption">Cookies, logins e dados armazenados</string>
     <string name="clear_site_data_title">Limpar os dados de %s?</string>
-    <string name="clear_site_data_message">Isto remove deste dispositivo:\n\n• os cookies: você sairá da sua conta no site\n• os dados armazenados (local storage, IndexedDB e afins)\n• o cache do site\n\nAs configurações do site e o histórico dele são mantidos.</string>
+    <string name="clear_site_data_cookies">Cookies: você sairá da sua conta no site</string>
+    <string name="clear_site_data_storage">Dados armazenados (local storage, IndexedDB e afins)</string>
+    <string name="clear_site_data_cache">Cache do site</string>
+    <string name="clear_site_data_keeps">As configurações do site e o histórico dele são mantidos.</string>
     <string name="clear_site_data_failed">Não foi possível limpar os dados do site</string>
     <string name="default_site_view">Visualização padrão dos sites</string>
     <array name="site_views">

@@ -10,6 +10,7 @@ import com.phlox.tvwebbrowser.model.BrowserTab
 import com.phlox.tvwebbrowser.model.HostConfig
 import com.phlox.tvwebbrowser.singleton.AppDatabase
 import com.phlox.tvwebbrowser.singleton.FaviconsPool
+import com.phlox.tvwebbrowser.webengine.SiteDataKind
 import com.phlox.tvwebbrowser.webengine.WebEngineFactory
 import com.phlox.tvwebbrowser.webengine.WebEngineCallbacks
 import kotlinx.coroutines.CoroutineScope
@@ -422,15 +423,34 @@ class BrowserControllerEventsTest {
     @Test
     fun clearingSiteDataClearsTheHostAndReloads() {
         FakeWebEngine.clearedSites.clear()
+        FakeWebEngine.clearedKinds.clear()
         val tab = open("https://www.a.com/page")
         runBlocking { db.hostsDao().setDesktopView("www.a.com", false) }
         tab.fakeEngine.log.clear()
         runBlocking { controller.clearSiteData(tab) }
         assertEquals(listOf("www.a.com"), FakeWebEngine.clearedSites)
+        assertEquals(listOf(SiteDataKind.ALL), FakeWebEngine.clearedKinds)
         assertEquals(listOf("reload"), tab.fakeEngine.log)
         assertTrue(state.siteDataClearable)
         //the settings of the site stay
         assertEquals(false, runBlocking { db.hostsDao().findByHostName("www.a.com") }!!.desktopView)
+    }
+
+    @Test
+    fun clearingChosenSiteDataClearsOnlyThem() {
+        FakeWebEngine.clearedSites.clear()
+        FakeWebEngine.clearedKinds.clear()
+        val tab = open("https://www.a.com/page")
+        tab.fakeEngine.log.clear()
+        val kinds = setOf(SiteDataKind.STORAGE, SiteDataKind.CACHE)
+        runBlocking { controller.clearSiteData(tab, kinds) }
+        assertEquals(listOf(kinds), FakeWebEngine.clearedKinds)
+        assertEquals(listOf("reload"), tab.fakeEngine.log)
+        //nothing chosen: nothing cleared, no reload
+        tab.fakeEngine.log.clear()
+        runBlocking { controller.clearSiteData(tab, emptySet()) }
+        assertEquals(1, FakeWebEngine.clearedKinds.size)
+        assertTrue(tab.fakeEngine.log.isEmpty())
     }
 
     @Test

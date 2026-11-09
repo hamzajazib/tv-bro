@@ -11,6 +11,7 @@ import com.phlox.tvwebbrowser.webengine.WebEngineProvider
 import com.phlox.tvwebbrowser.webengine.WebEngineProviderCallback
 import com.phlox.tvwebbrowser.webengine.WebEngineCallbacks
 import com.phlox.tvwebbrowser.webengine.SiteViewSupport
+import com.phlox.tvwebbrowser.webengine.SiteDataKind
 
 /**
  * Web engine that only records what is done with it.
@@ -24,10 +25,15 @@ class FakeWebEngine(val tab: BrowserTab) : WebEngine, SiteViewSupport {
             override fun onThemeSettingUpdated(value: Config.Theme) {}
             override fun getWebEngineVersionString(): String = "fake"
             override fun supportsSiteDataClearing(): Boolean = true
-            override suspend fun clearSiteData(context: Context, host: String) { clearedSites += host }
+            override suspend fun clearSiteData(context: Context, host: String, kinds: Set<SiteDataKind>) {
+                clearedSites += host
+                clearedKinds += kinds
+            }
         })
         /** The hosts whose data was cleared */
         val clearedSites = ArrayList<String>()
+        /** What was cleared of each of [clearedSites] */
+        val clearedKinds = ArrayList<Set<SiteDataKind>>()
     }
 
     val log = ArrayList<String>()
