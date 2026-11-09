@@ -1,4 +1,4 @@
-package com.phlox.tvwebbrowser.sync
+package com.phlox.tvwebbrowser.send
 
 import android.graphics.Bitmap
 import android.graphics.Color

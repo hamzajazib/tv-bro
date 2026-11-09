@@ -193,9 +193,9 @@
         android:elevation="7dp"
         android:outlineProvider="none" />
 
-    <!-- pairing of phones, over the whole window and the bar -->
-    <com.phlox.tvwebbrowser.activity.main.view.TvSyncScreenView
-        android:id="@+id/vSyncScreen"
+    <!-- sending to the TV from other devices, over the whole window and the bar -->
+    <com.phlox.tvwebbrowser.activity.main.view.TvSendScreenView
+        android:id="@+id/vSendScreen"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:elevation="7dp"

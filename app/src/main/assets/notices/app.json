@@ -72,7 +72,7 @@
     "licenseFile": "mit-qrcodegen.txt",
     "copyright": "Copyright (c) Project Nayuki",
     "url": "https://www.nayuki.io/page/qr-code-generator-library",
-    "note": "The QR codes of the phone sync."
+    "note": "The QR code of sending to the TV."
   },
   {
     "id": "public-suffix-list",

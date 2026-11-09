@@ -7,10 +7,9 @@ import android.webkit.MimeTypeMap
 import com.phlox.tvwebbrowser.R
 import com.phlox.tvwebbrowser.data.DownloadsRepository
 import com.phlox.tvwebbrowser.model.Download
-import com.phlox.tvwebbrowser.model.PairedDevice
-import com.phlox.tvwebbrowser.sync.SyncException
-import com.phlox.tvwebbrowser.sync.SyncRequests
-import com.phlox.tvwebbrowser.sync.SyncServer
+import com.phlox.tvwebbrowser.send.LocalSendServer
+import com.phlox.tvwebbrowser.send.SendException
+import com.phlox.tvwebbrowser.send.SendRules
 import com.phlox.tvwebbrowser.webengine.DownloadRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -20,34 +19,35 @@ import java.io.IOException
 import java.io.OutputStream
 
 /**
- * Saves the files paired phones send ([SyncRequests.SEND_FILE]) as downloads of the TV: they go where
- * downloads go (the folder the user chose, or Downloads), show in the downloads screens with their progress
- * and can be cancelled there. The TV tells when a file comes and when it is saved ([notify], on the main thread).
+ * Saves the files other devices send from the page of the TV ([LocalSendServer]) as downloads of the TV: they
+ * go where downloads go (the folder the user chose, or Downloads), show in the downloads screens with their
+ * progress and can be cancelled there. The TV tells when a file comes and when it is saved ([notify], on the
+ * main thread).
  */
-class PhoneFileReceiver(
+class SentFileReceiver(
     private val context: Context,
     private val host: BrowserShell.Host,
     private val downloads: () -> DownloadsRepository,
     private val notify: (message: String) -> Unit
 ) {
     companion object {
-        private const val TAG = "PhoneFileReceiver"
+        private const val TAG = "SentFileReceiver"
     }
 
-    /** Called on the main thread, see [SyncServer.Host.receiveFile] */
-    suspend fun receive(from: PairedDevice, name: String, mimeType: String?, size: Long): SyncServer.IncomingFile {
-        //the type of the extension: the phone's only when the extension tells nothing
+    /** Called on the main thread, see [LocalSendServer.Host.receiveFile]; [from] may be empty */
+    suspend fun receive(name: String, mimeType: String?, size: Long, from: String): LocalSendServer.IncomingFile {
+        //the type of the extension: the sender's only when the extension tells nothing
         val type = mimeTypeOf(name) ?: mimeType
-        val request = DownloadRequest(url = SyncRequests.phoneFileUrl(from.name), referer = "", userAgent = null,
+        val request = DownloadRequest(url = SendRules.sentFileUrl(from), referer = "", userAgent = null,
             fileName = name, mimeType = type, size = size.coerceAtLeast(0L))
         val incoming = try {
             host.receiveDownload(request)
         } catch (e: IOException) {
             Log.e(TAG, "can not start $name", e)
-            throw SyncException(SyncRequests.STORAGE)
-        } ?: throw SyncException(SyncRequests.NEED_PERMISSION)
-        notify(context.getString(R.string.sync_file_receiving, incoming.download.filename, from.name))
-        return File(incoming, from)
+            throw SendException(SendRules.STORAGE)
+        } ?: throw SendException(SendRules.NEED_PERMISSION)
+        notify(context.getString(R.string.send_file_receiving, incoming.download.filename))
+        return File(incoming)
     }
 
     private fun mimeTypeOf(name: String): String? {
@@ -55,8 +55,7 @@ class PhoneFileReceiver(
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
     }
 
-    private inner class File(private val incoming: DownloadLauncher.Incoming, private val from: PairedDevice) :
-        SyncServer.IncomingFile {
+    private inner class File(private val incoming: DownloadLauncher.Incoming) : LocalSendServer.IncomingFile {
         override val output: OutputStream = ParcelFileDescriptor.AutoCloseOutputStream(incoming.output)
 
         override fun fail(reason: String) {
@@ -77,14 +76,14 @@ class PhoneFileReceiver(
             val name = row?.filename ?: incoming.download.filename
             when (row?.status) {
                 Download.Status.DONE -> {
-                    withContext(Dispatchers.Main) { notify(context.getString(R.string.sync_file_received, name, from.name)) }
+                    withContext(Dispatchers.Main) { notify(context.getString(R.string.send_file_received, name)) }
                     return name
                 }
                 //removed from the list, or cancelled
-                null, Download.Status.CANCELLED -> throw SyncException(SyncRequests.CANCELLED)
+                null, Download.Status.CANCELLED -> throw SendException(SendRules.CANCELLED)
                 else -> {
-                    withContext(Dispatchers.Main) { notify(context.getString(R.string.sync_file_not_saved, name)) }
-                    throw SyncException(if (row.error == Download.Error.STORAGE) SyncRequests.STORAGE else SyncRequests.FAILED)
+                    withContext(Dispatchers.Main) { notify(context.getString(R.string.send_file_not_saved, name)) }
+                    throw SendException(if (row.error == Download.Error.STORAGE) SendRules.STORAGE else SendRules.FAILED)
                 }
             }
         }

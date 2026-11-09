@@ -454,114 +454,50 @@
     <string name="long_press">Long press</string>
     <string name="local_network_access_denied">Local network access denied</string>
 
-    <!-- sync of a phone with a TV: the TV side -->
-    <string name="sync_connect_phone">Connect a phone</string>
-    <!-- the row of the ⋮ menu of the TV bar that opens the pairing of phones -->
-    <string name="sync_phone_sync">Phone sync</string>
-    <string name="sync_scan_title">Scan with your phone</string>
-    <string name="sync_scan_steps">Point the camera of your phone at the code and open the link in TV Bro. You can then send tabs, bookmarks and files from the phone to this TV.</string>
-    <!-- %s: the addresses of the TV -->
-    <string name="sync_same_network">The phone must be on the same network as the TV (%s).</string>
-    <string name="sync_no_network">The TV is not connected to a network.</string>
-    <string name="sync_starting">Starting…</string>
-    <string name="sync_paired_phones">Paired phones</string>
-    <string name="sync_no_paired_phones">No phones yet</string>
-    <!-- %s: a relative time, like "5 minutes ago" -->
-    <string name="sync_last_seen">Last connected %s</string>
-    <string name="sync_forget">Forget</string>
-    <!-- %s: the name of the phone -->
-    <string name="sync_forget_phone_confirm">Forget %s? It will have to scan the code again.</string>
-    <string name="sync_undo_bookmarks">Undo the last change of bookmarks</string>
-    <string name="sync_undo_bookmarks_confirm">Bring back the bookmarks as they were before the last change sent from a phone?</string>
-    <string name="sync_restore">Restore</string>
-    <string name="sync_bookmarks_restored">Bookmarks restored</string>
-    <!-- %s: the name of the phone -->
-    <string name="sync_phone_paired">%s connected</string>
-    <!-- %1$s: the name of the phone -->
-    <plurals name="sync_tabs_opened">
-        <item quantity="one">%1$s sent %2$d tab</item>
-        <item quantity="other">%1$s sent %2$d tabs</item>
-    </plurals>
-    <!-- %s: the name of the phone -->
-    <string name="sync_bookmarks_updated">%s updated the bookmarks</string>
-    <string name="sync_phone_forgotten">%s is forgotten</string>
-    <string name="sync_link_on_tv">Open this link on a phone</string>
+    <!-- sending to the TV from other devices: the row of the ⋮ menu of the TV bar that opens its screen -->
+    <string name="send_menu">Send from phone</string>
+    <string name="send_title">Send to this TV</string>
+    <string name="send_scan_title">Scan with a phone</string>
+    <string name="send_or_open">or open on any device:</string>
+    <string name="send_code_waiting">Getting a short address…</string>
+    <string name="send_what">Point the camera of a phone or tablet at the code and open the link in any browser. Addresses and searches you send open here in a new tab, files go to the downloads.</string>
+    <string name="send_cloud_connecting">Connecting to the server…</string>
+    <string name="send_cloud_listening">Ready: waiting for what you send</string>
+    <string name="send_cloud_offline">No connection to the server: only devices on the network of the TV can send</string>
+    <!-- %s: the addresses of the page of the TV in the local network -->
+    <string name="send_local_network">Files can be sent from devices on the same network as the TV (%s)</string>
+    <string name="send_no_local_network">The TV is not connected to a local network: files cannot be sent</string>
+    <string name="send_received">Received</string>
+    <string name="send_nothing_received">Nothing yet</string>
+    <string name="send_new_link">New link</string>
+    <string name="send_new_link_confirm">Make a new link? Devices that saved the old one will have to scan the code again.</string>
+    <string name="send_page_opened">A page was sent to the TV</string>
+    <!-- %s: the browser and system of the device, like "Chrome · Android" -->
+    <string name="send_page_opened_from">Sent from %s</string>
+    <string name="send_cannot_open">Cannot open what was sent</string>
+    <!-- %s: the file -->
+    <string name="send_file_receiving">Receiving %s</string>
+    <string name="send_file_received">%s received</string>
+    <string name="send_file_not_saved">Cannot save %s</string>
+    <!-- the page of the TV, opened in a browser of another device of the same network -->
+    <string name="send_page_title">Send to TV Bro</string>
+    <string name="send_page_open_title">Open on the TV</string>
+    <string name="send_page_address_hint">Address or search</string>
+    <string name="send_page_send">Send</string>
+    <string name="send_page_sent">Sent to the TV</string>
+    <string name="send_page_files_title">Send files</string>
+    <string name="send_page_choose_files">Choose files</string>
+    <string name="send_page_files_hint">They go to the downloads of the TV.</string>
+    <!-- %1$s: the file, %2$s: 45% -->
+    <string name="send_page_sending">Sending %1$s… %2$s</string>
+    <string name="send_page_saved">%1$s is saved on the TV</string>
+    <string name="send_page_need_permission">Allow TV Bro on the TV to save files, then send again</string>
+    <string name="send_page_storage">The TV cannot save the file</string>
+    <string name="send_page_cancelled">The file was cancelled on the TV</string>
+    <string name="send_page_failed">Something went wrong</string>
+    <string name="send_page_bad_key">This link is out of date: scan the code on the TV again</string>
+    <string name="send_page_offline">The TV does not answer. Is its screen “Send to this TV” open?</string>
 
-    <!-- sync of a phone with a TV: the phone side -->
-    <string name="sync_send_to_tv">Send to TV</string>
-    <string name="sync_tvs">TVs</string>
-    <string name="sync_no_tvs">No TVs yet</string>
-    <string name="sync_how_to_pair">On the TV, open TV Bro, choose the phone button of its bar and scan the code with the camera of this phone.</string>
-    <!-- %s: the name of the TV -->
-    <string name="sync_pairing">Connecting to %s…</string>
-    <string name="sync_paired">%s added</string>
-    <string name="sync_pairing_failed">Cannot connect to the TV</string>
-    <string name="sync_unreachable">%s is not found</string>
-    <string name="sync_tv_forgot">%s forgot this phone</string>
-    <string name="sync_failed">Something went wrong</string>
-    <string name="sync_connecting">Connecting…</string>
-    <string name="sync_send_tabs">Send tabs</string>
-    <string name="sync_send_tabs_summary">Open pages of this phone on the TV</string>
-    <string name="sync_send_bookmarks">Send bookmarks</string>
-    <string name="sync_send_bookmarks_summary">Chosen folders replace the same folders on the TV</string>
-    <string name="sync_get_bookmarks">Get bookmarks</string>
-    <string name="sync_get_bookmarks_summary">Chosen folders of the TV replace the same folders on this phone</string>
-    <string name="sync_undo_bookmarks_phone_summary">Bring back the bookmarks of this phone as they were before</string>
-    <string name="sync_bookmarks_hint_from_tv">A folder of the TV chosen with all its contents replaces the same folder on this phone. A folder chosen in part only adds new and renamed bookmarks.</string>
-    <string name="sync_bookmarks_preview_title_phone">Update bookmarks on this phone?</string>
-    <string name="sync_bookmarks_same_phone">This phone has the same bookmarks</string>
-    <string name="sync_bookmarks_received">Bookmarks updated on this phone</string>
-    <!-- %s: the name of the TV -->
-    <string name="sync_tv_too_old">%s needs a newer TV Bro</string>
-    <string name="sync_send">Send</string>
-    <string name="sync_next">Next</string>
-    <string name="sync_select_all">Select all</string>
-    <string name="sync_select_none">Select none</string>
-    <string name="sync_nothing_selected">Nothing is selected</string>
-    <plurals name="sync_tabs_sent">
-        <item quantity="one">%d tab sent</item>
-        <item quantity="other">%d tabs sent</item>
-    </plurals>
-    <string name="sync_bookmarks_hint">A folder chosen with all its contents replaces the same folder on the TV. A folder chosen in part only gets new and renamed bookmarks.</string>
-    <!-- %s: the name of the TV -->
-    <string name="sync_bookmarks_preview_title">Update bookmarks on %s?</string>
-    <string name="sync_bookmarks_preview">Added: %1$d\nRenamed: %2$d\nDeleted: %3$d</string>
-    <string name="sync_bookmarks_will_be_deleted">Will be deleted:</string>
-    <string name="sync_bookmarks_same">The TV has the same bookmarks</string>
-    <string name="sync_update">Update</string>
-    <string name="sync_bookmarks_sent">Bookmarks updated on %s</string>
-    <string name="sync_tv_changed">The TV bookmarks changed. Try again</string>
-    <string name="sync_forget_tv_confirm">Forget %s?</string>
-    <string name="sync_status_checking">Looking for it…</string>
-    <string name="sync_status_found">Ready</string>
-    <string name="sync_status_not_found">Not found: open TV Bro on it</string>
-    <string name="sync_status_forgot">Does not know this phone any more</string>
-    <!-- %d: the number of chosen tabs -->
-    <string name="sync_send_count">Send (%d)</string>
-    <string name="sync_local_network_needed">Allow access to the local network</string>
-    <!-- files sent from a phone to the downloads of a TV -->
-    <string name="sync_send_files">Send files</string>
-    <string name="sync_send_files_summary">Photos, videos, apps and other files go to the downloads of the TV</string>
-    <string name="sync_no_file_picker">No app to choose files</string>
-    <!-- %1$s: the file, %2$s: 45% or 12 MB -->
-    <string name="sync_file_sending">Sending %1$s · %2$s</string>
-    <!-- %1$s: the file, %2$d of %3$d files, %4$s: 45% or 12 MB -->
-    <string name="sync_files_sending">Sending %1$s (%2$d of %3$d) · %4$s</string>
-    <plurals name="sync_files_sent">
-        <item quantity="one">%1$d file sent to %2$s</item>
-        <item quantity="other">%1$d files sent to %2$s</item>
-    </plurals>
-    <string name="sync_files_cancelled">Sending cancelled</string>
-    <string name="sync_file_unreadable">Cannot read %s</string>
-    <!-- %1$s: the file, %2$s: the TV -->
-    <string name="sync_file_interrupted">%2$s stopped receiving %1$s</string>
-    <string name="sync_file_need_permission">Allow TV Bro on %s to save files, then send again</string>
-    <string name="sync_file_storage">%s cannot save the file</string>
-    <string name="sync_file_cancelled_on_tv">The file was cancelled on %s</string>
-    <!-- on the TV; %1$s: the file, %2$s: the phone -->
-    <string name="sync_file_receiving">Receiving %1$s from %2$s</string>
-    <string name="sync_file_received">%1$s received from %2$s</string>
-    <string name="sync_file_not_saved">Cannot save %s</string>
     <!-- the settings screens: the categories -->
     <string name="settings_search_and_home">Search and home page</string>
     <string name="settings_sites">Sites</string>

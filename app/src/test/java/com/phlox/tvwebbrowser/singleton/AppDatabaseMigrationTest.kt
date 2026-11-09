@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import androidx.room.Room
 import com.phlox.tvwebbrowser.model.Download
-import com.phlox.tvwebbrowser.model.PairedDevice
 import com.phlox.tvwebbrowser.model.TabEntity
 import com.phlox.tvwebbrowser.model.dao.HostsDao
 import kotlinx.coroutines.flow.first
@@ -121,7 +120,7 @@ class AppDatabaseMigrationTest {
         assertEquals(1, runBlocking { db.historyDao().count() })
 
         val sqlDb = db.openHelper.readableDatabase
-        assertEquals(28, sqlDb.version)
+        assertEquals(29, sqlDb.version)
         sqlDb.query("PRAGMA table_info(tabs)").use { cursor ->
             val nameIndex = cursor.getColumnIndex("name")
             val columns = ArrayList<String>()
@@ -285,7 +284,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migrate24To25AddsPairedDevices() {
+    fun migrate24To25KeepsTheData() {
         createDatabase(24) { db ->
             db.insert("history", null, ContentValues().apply {
                 put("id", 1L)
@@ -297,12 +296,6 @@ class AppDatabaseMigrationTest {
 
         val db = openMigrated()
         assertEquals(1, runBlocking { db.historyDao().count() })
-        val dao = db.pairedDevicesDao()
-        val device = PairedDevice(pairingId = "p1", peerId = "phone", kind = PairedDevice.KIND_PHONE, name = "Phone",
-            wrappedKey = "key", createdAt = 10, lastSeenAt = 20)
-        val id = runBlocking { dao.insert(device) }
-        assertEquals(device.copy(id = id), runBlocking { dao.findByPairingId("p1") })
-        assertEquals(listOf(id), runBlocking { dao.observe(PairedDevice.KIND_PHONE).first() }.map { it.id })
     }
 
     @Test
@@ -397,5 +390,33 @@ class AppDatabaseMigrationTest {
         file.streamSpec = "{}"
         runBlocking { dao.update(file) }
         assertEquals("{}", runBlocking { dao.get(1) }!!.streamSpec)
+    }
+
+    @Test
+    fun migrate28To29DropsThePairedDevices() {
+        createDatabase(28) { db ->
+            db.insert("paired_devices", null, ContentValues().apply {
+                put("pairing_id", "p1")
+                put("peer_id", "phone")
+                put("kind", 0)
+                put("name", "Phone")
+                put("wrapped_key", "key")
+                put("port", 0)
+                put("created_at", 10L)
+                put("last_seen_at", 20L)
+            })
+            db.insert("history", null, ContentValues().apply {
+                put("id", 1L)
+                put("time", 100L)
+                put("title", "History")
+                put("url", "https://history.com/")
+            })
+        }
+
+        val db = openMigrated()
+        assertEquals(1, runBlocking { db.historyDao().count() })
+        db.openHelper.readableDatabase.query("SELECT name FROM sqlite_master WHERE name = 'paired_devices'").use {
+            assertEquals(0, it.count)
+        }
     }
 }

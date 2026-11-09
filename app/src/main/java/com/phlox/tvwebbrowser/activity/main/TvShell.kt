@@ -41,7 +41,7 @@ import com.phlox.tvwebbrowser.activity.main.view.PopupMenuView
 import com.phlox.tvwebbrowser.activity.main.view.SiteSettingsView
 import com.phlox.tvwebbrowser.activity.main.view.TabMenuView
 import com.phlox.tvwebbrowser.activity.main.view.TvFindBarView
-import com.phlox.tvwebbrowser.activity.main.view.TvSyncScreenView
+import com.phlox.tvwebbrowser.activity.main.view.TvSendScreenView
 import com.phlox.tvwebbrowser.activity.main.view.tabs.TabsAdapter.Listener
 import com.phlox.tvwebbrowser.browser.BrowserUiEvent
 import com.phlox.tvwebbrowser.browser.DownloadEvent
@@ -51,15 +51,11 @@ import com.phlox.tvwebbrowser.browser.CurrentTabState
 import com.phlox.tvwebbrowser.databinding.ActivityMainBinding
 import com.phlox.tvwebbrowser.model.BrowserTab
 import com.phlox.tvwebbrowser.model.Download
-import com.phlox.tvwebbrowser.model.PairedDevice
-import com.phlox.tvwebbrowser.sync.BookmarksBackup
-import com.phlox.tvwebbrowser.sync.BookmarksReplacer
-import com.phlox.tvwebbrowser.sync.LocalBookmarks
-import com.phlox.tvwebbrowser.sync.SyncDiscovery
-import com.phlox.tvwebbrowser.sync.SyncLink
-import com.phlox.tvwebbrowser.sync.SyncServer
-import com.phlox.tvwebbrowser.sync.SyncSettings
-import com.phlox.tvwebbrowser.sync.SyncTab
+import com.phlox.tvwebbrowser.send.CloudInbox
+import com.phlox.tvwebbrowser.send.LocalSendPage
+import com.phlox.tvwebbrowser.send.SendRules
+import com.phlox.tvwebbrowser.send.SendSession
+import com.phlox.tvwebbrowser.send.SendSettings
 import com.phlox.tvwebbrowser.utils.VoiceSearchHelper
 import com.phlox.tvwebbrowser.utils.BaseAnimationListener
 import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
@@ -84,6 +80,7 @@ import com.phlox.tvwebbrowser.widgets.NotificationView
 import com.phlox.tvwebbrowser.widgets.cursor.CursorDrawerDelegate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 /**
@@ -522,7 +519,7 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
         val items = listOf(
             PopupMenuView.Item(R.drawable.ic_search, activity.getString(R.string.find_in_page)) { showFindInPage() },
             PopupMenuView.Item(R.drawable.ic_history, activity.getString(R.string.history)) { showHistory() },
-            PopupMenuView.Item(R.drawable.ic_phone, activity.getString(R.string.sync_phone_sync)) { showPhoneSync() },
+            PopupMenuView.Item(R.drawable.ic_phone, activity.getString(R.string.send_menu)) { showSendScreen() },
             PopupMenuView.Item(R.drawable.ic_settings, activity.getString(R.string.settings)) { showSettings() }
         )
         vb.vPopupMenu.show(vb.vActionBar.moreButton, items, alignEnd = true, endAlignTo = vb.vActionBar.functionsGroup,
@@ -722,7 +719,7 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
     private fun isPageCovered(): Boolean = fullscreen || vb.rlActionBar.isVisible ||
             !activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) ||
             listOf(vb.vFindBar, vb.vSitePanel, vb.vTabMenu, vb.vPopupMenu, vb.vBookmarksPanel, vb.vDownloadsPanel, vb.vVideosPanel,
-                vb.vDownloadsScreen, vb.vHistoryScreen, vb.vSyncScreen, vb.vSettingsScreen, vb.vPlayerScreen, vb.vVideoChoice,
+                vb.vDownloadsScreen, vb.vHistoryScreen, vb.vSendScreen, vb.vSettingsScreen, vb.vPlayerScreen, vb.vVideoChoice,
                 vb.vCursorMenu, vb.progressBarGeneric).any { it.isVisible }
 
     private fun updatePageCovered() = pageVideoHint.setBlocked(isPageCovered())
@@ -809,125 +806,102 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
     //the focus stays in the view of the page meanwhile (its fullscreen view): its cursor would take the D-pad of a pad
     override fun takesDpad(): Boolean = vb.vPlayerScreen.isOpen || vb.vVideoChoice.isOpen || videoMode.isActive
 
-    /** The bookmarks of the TV that phones change, with the backup of before the last change */
-    private val bookmarks = LocalBookmarks({ TVBro.container.data }, BookmarksBackup(activity.filesDir),
-        activity.getString(R.string.home_page))
+    /** Waits for what other devices send while the screen of sending is open */
+    private val sendSettings = SendSettings(activity, AppContext.provideConfig().prefs)
+    private val sendSession = SendSession(sendSettings, CloudInbox(), lifecycleScope, TVBro.container.appScope,
+        object : SendSession.Host {
+            private val page = LocalSendPage(activity, sendSettings.deviceName)
 
-    /** Listens for paired phones while the activity is started */
-    private val syncServer = SyncServer(SyncSettings(activity, AppContext.provideConfig().prefs), { TVBro.container.data },
-        bookmarks, object : SyncServer.Host {
-            override fun openTabs(from: PairedDevice, tabs: List<SyncTab>) = openTabsFromPhone(from, tabs)
+            override fun asset(path: String) = page.asset(path)
 
-            override fun onBookmarksReplaced(from: PairedDevice, changes: BookmarksReplacer.Changes) {
-                controller.modelScope.launch { controller.homePageLinks.load() }
-                vb.vSyncScreen.refresh()
-                NotificationView.show(vb.rlRoot, R.drawable.ic_favorites, activity.getString(R.string.sync_bookmarks_updated, from.name))
-            }
+            override fun onText(text: String, from: String) = openSentText(text, from)
 
-            override fun onPaired(device: PairedDevice) {
-                NotificationView.show(vb.rlRoot, R.drawable.ic_phone, activity.getString(R.string.sync_phone_paired, device.name))
-            }
+            override suspend fun receiveFile(name: String, mimeType: String?, size: Long, from: String) =
+                sentFiles.receive(name, mimeType, size, from).also { addReceived(name) }
+        })
 
-            override fun onForgotten(device: PairedDevice) {
-                NotificationView.show(vb.rlRoot, R.drawable.ic_phone, activity.getString(R.string.sync_phone_forgotten, device.name))
-            }
-
-            override suspend fun receiveFile(from: PairedDevice, name: String, mimeType: String?, size: Long) =
-                phoneFiles.receive(from, name, mimeType, size)
-        }, discovery = SyncDiscovery(activity))
-
-    /** The files phones send go to the downloads */
-    private val phoneFiles = PhoneFileReceiver(activity, host, { TVBro.container.data.downloads }) { message ->
+    /** The files go to the downloads */
+    private val sentFiles = SentFileReceiver(activity, host, { TVBro.container.data.downloads }) { message ->
         NotificationView.show(vb.rlRoot, R.drawable.ic_phone, message)
     }
 
+    /** What came lately, the newest first, for the screen of sending */
+    private val receivedItems = MutableStateFlow<List<String>>(emptyList())
+
+    /** Texts that came before the tabs were loaded */
+    private val pendingTexts = mutableListOf<Pair<String, String>>()
+
+    private fun addReceived(item: String) {
+        receivedItems.value = (listOf(item.take(200)) + receivedItems.value).take(8)
+    }
+
     /**
-     * The first tab is shown (the screen of the pairing and the bar close), the others wait at the end of
-     * the tabs; all of them wait while a video is fullscreen. A page that is open already is not opened
-     * again: its tab is shown instead.
+     * A text another device sent opens as if typed into the address bar, in a new tab (or the tab of the page
+     * if it is open already); the screens close. While a video is fullscreen or in the built-in player, the
+     * tab waits at the end of the tabs.
      */
-    private fun openTabsFromPhone(from: PairedDevice, tabs: List<SyncTab>) {
-        if (!controller.loaded) return
-        tabs.forEachIndexed { i, tab ->
-            val open = controller.tabsStates.firstOrNull { it.url == tab.url }
-            //the video in fullscreen or in the built-in player goes on: the tabs wait
-            if (i == 0 && !fullscreen && !vb.vPlayerScreen.isOpen) {
-                vb.vSyncScreen.hide()
-                vb.vSettingsScreen.hide()
-                vb.vDownloadsScreen.hide()
-                vb.vHistoryScreen.hide()
-                if (open != null) {
-                    controller.changeTab(open)
-                    showPage()
-                } else {
-                    host.openInNewTab(tab.url, controller.tabsStates.size)
-                }
-            } else if (open == null) {
-                controller.addBackgroundTab(tab.url, tab.title, controller.tabsStates.size)
-            }
+    private fun openSentText(text: String, from: String) {
+        if (!controller.loaded) {
+            pendingTexts += text to from
+            return
         }
-        NotificationView.show(vb.rlRoot, R.drawable.ic_phone,
-            activity.resources.getQuantityString(R.plurals.sync_tabs_opened, tabs.size, from.name, tabs.size))
+        val url = SendRules.urlOf(text, AppContext.provideConfig().searchEngineURL.value)
+        if (url == null) {
+            NotificationView.show(vb.rlRoot, R.drawable.ic_phone, activity.getString(R.string.send_cannot_open))
+            return
+        }
+        addReceived(text)
+        val open = controller.tabsStates.firstOrNull { it.url == url }
+        if (!fullscreen && !vb.vPlayerScreen.isOpen) {
+            vb.vSendScreen.hide()
+            vb.vSettingsScreen.hide()
+            vb.vDownloadsScreen.hide()
+            vb.vHistoryScreen.hide()
+            if (open != null) {
+                controller.changeTab(open)
+                showPage()
+            } else {
+                host.openInNewTab(url, controller.tabsStates.size)
+            }
+        } else if (open == null) {
+            controller.addBackgroundTab(url, text, controller.tabsStates.size)
+        }
+        NotificationView.show(vb.rlRoot, R.drawable.ic_phone, if (from.isEmpty()) activity.getString(R.string.send_page_opened)
+            else activity.getString(R.string.send_page_opened_from, from))
     }
 
     /** Android 17 asks the user before the app talks to devices of the local network */
-    private fun showPhoneSync() {
-        vb.vSyncScreen.show()
+    private fun showSendScreen() {
+        vb.vSendScreen.show()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN && ContextCompat.checkSelfPermission(activity,
                 Manifest.permission.ACCESS_LOCAL_NETWORK) != PackageManager.PERMISSION_GRANTED) {
             activity.launchForResult(ActivityResultContracts.RequestPermission(), Manifest.permission.ACCESS_LOCAL_NETWORK) {}
         }
     }
 
-    private val syncScreenCallback = object : TvSyncScreenView.Callback {
-        override val pairingLink get() = syncServer.pairingLink
-        override val phones get() = TVBro.container.data.pairedDevices.observe(PairedDevice.KIND_PHONE)
-        override val canUndoBookmarks: Boolean get() = bookmarks.canRestore
+    private val sendScreenCallback = object : TvSendScreenView.Callback {
+        override val state get() = sendSession.state
+        override val received get() = receivedItems
 
-        override fun startPairing() = syncServer.startPairing()
+        override fun onOpened() = sendSession.open()
 
-        override fun stopPairing() = syncServer.stopPairing()
-
-        override fun forget(phone: PairedDevice) {
+        override fun newLink() {
             AlertDialog.Builder(activity)
-                .setMessage(activity.getString(R.string.sync_forget_phone_confirm, phone.name))
-                .setPositiveButton(R.string.sync_forget) { _, _ ->
-                    lifecycleScope.launch { TVBro.container.data.pairedDevices.delete(phone) }
-                }
-                .setNegativeButton(R.string.cancel, null)
-                .show()
-        }
-
-        override fun undoBookmarks() {
-            AlertDialog.Builder(activity)
-                .setMessage(R.string.sync_undo_bookmarks_confirm)
-                .setPositiveButton(R.string.sync_restore) { _, _ ->
-                    lifecycleScope.launch {
-                        if (bookmarks.restore() != null) {
-                            controller.homePageLinks.load()
-                            NotificationView.show(vb.rlRoot, R.drawable.ic_favorites, activity.getString(R.string.sync_bookmarks_restored))
-                        }
-                        vb.vSyncScreen.refresh()
-                    }
-                }
+                .setMessage(R.string.send_new_link_confirm)
+                .setPositiveButton(R.string.send_new_link) { _, _ -> sendSession.newLink() }
                 .setNegativeButton(R.string.cancel, null)
                 .show()
         }
 
         /** The focus goes back to the ⋮ button of the bar (its menu opened it), or to the page if the bar is closed */
         override fun onClosed() {
+            sendSession.close()
             if (vb.rlActionBar.isVisible) {
                 vb.vActionBar.moreButton.requestFocus()
             } else {
                 controller.currentTab.value?.webEngine?.getView()?.requestFocus()
             }
         }
-    }
-
-    /** A link of a pairing is for a phone */
-    override fun handleSyncLink(link: SyncLink?): Boolean {
-        NotificationView.show(vb.rlRoot, R.drawable.ic_phone, activity.getString(R.string.sync_link_on_tv))
-        return true
     }
 
     override fun showSitePanel() {
@@ -1053,7 +1027,7 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
 
     override fun showFindInPage() {
         //not over the screens, the player or a fullscreen video
-        if (fullscreen || listOf(vb.vDownloadsScreen, vb.vHistoryScreen, vb.vSyncScreen, vb.vSettingsScreen,
+        if (fullscreen || listOf(vb.vDownloadsScreen, vb.vHistoryScreen, vb.vSendScreen, vb.vSettingsScreen,
                 vb.vPlayerScreen).any { it.isVisible }) return
         if (!findInPage.open()) return
         //the bar closes first: the field gets the focus when the page is shown
@@ -1081,10 +1055,13 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
         vb.vVideoChoice.onClosed = ::onVideoChoiceClosed
         vb.vDownloadsScreen.attach(lifecycleScope, vb.vPopupMenu, downloadsCallback, ::onDownloadsScreenClosed)
         vb.vHistoryScreen.attach(lifecycleScope, vb.vPopupMenu, historyCallback, ::onHistoryScreenClosed)
-        vb.vSyncScreen.attach(lifecycleScope, syncScreenCallback)
+        vb.vSendScreen.attach(lifecycleScope, sendScreenCallback)
         vb.vSettingsScreen.attach(lifecycleScope, vb.vPopupMenu, settingsCallback, ::onSettingsClosed)
         activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onStart(owner: LifecycleOwner) = syncServer.start()
+            //the screen stayed open while the activity was stopped
+            override fun onStart(owner: LifecycleOwner) {
+                if (vb.vSendScreen.isOpen) sendSession.open()
+            }
             override fun onPause(owner: LifecycleOwner) {
                 vb.vPlayerScreen.onPause()
                 pageVideoHint.setBlocked(true)
@@ -1093,9 +1070,9 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
                 vb.vPlayerScreen.onResume()
                 updatePageCovered()
             }
-            override fun onStop(owner: LifecycleOwner) = syncServer.stop()
+            override fun onStop(owner: LifecycleOwner) = sendSession.close()
             override fun onDestroy(owner: LifecycleOwner) {
-                syncServer.destroy()
+                sendSession.close(abort = true)
                 vb.vPlayerScreen.close()
             }
         })
@@ -1140,6 +1117,9 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
         if (currentTab == null || currentTab.url == settingsModel.homePage) {
             showMenuOverlay()
         }
+        val texts = pendingTexts.toList()
+        pendingTexts.clear()
+        texts.forEach { (text, from) -> openSentText(text, from) }
     }
 
     override fun onNoBackHistory() {
@@ -1350,7 +1330,7 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
         dispatcher.addCallback(activity, vb.vBookmarksPanel.backCallback)
         dispatcher.addCallback(activity, vb.vDownloadsScreen.backCallback)
         dispatcher.addCallback(activity, vb.vHistoryScreen.backCallback)
-        dispatcher.addCallback(activity, vb.vSyncScreen.backCallback)
+        dispatcher.addCallback(activity, vb.vSendScreen.backCallback)
         dispatcher.addCallback(activity, vb.vSettingsScreen.backCallback)
         dispatcher.addCallback(activity, vb.vDownloadsPanel.backCallback)
         dispatcher.addCallback(activity, vb.vVideosPanel.backCallback)

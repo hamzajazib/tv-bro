@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!--
+The page of the TV in the local network (LocalSendServer): another device of the network sends texts and files
+to the TV from it. The TV fills the {{holes}} with its strings (ErrorPageTemplate); the key of the TV is in the
+fragment of the link (#k=…) and goes with each request.
+-->
+<html lang="{{lang}}" dir="{{dir}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>{{title}}</title>
+<style>
+:root {
+    --bg-page: #EDF6FF;
+    --surface: #FFFFFF;
+    --control: #E6ECF4;
+    --line: #CFDEEE;
+    --focus: #A5D0FF;
+    --ink: #4F4F4F;
+    --ink-faint: #6B7785;
+    --accent: #1A73E8;
+    --on-accent: #FFFFFF;
+    --danger: #C5221F;
+    --ok: #188038;
+    --shadow: 0 4px 24px rgba(95, 172, 255, 0.12);
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-page: #343A3C;
+        --surface: #1B1B1B;
+        --control: #323940;
+        --line: #4E4E4E;
+        --ink: #F8F9FA;
+        --ink-faint: #B4BCC4;
+        --accent: #8AB4F8;
+        --on-accent: #0B1220;
+        --danger: #FF8A80;
+        --ok: #81C995;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    padding: 24px 16px;
+    background: var(--bg-page);
+    color: var(--ink);
+    font: 16px/1.5 Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+[hidden] { display: none !important; }
+main {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+h1 { margin: 0; font-size: 22px; line-height: 28px; font-weight: 500; }
+h2 { margin: 24px 0 8px; font-size: 17px; font-weight: 500; }
+.tv { margin: 4px 0 0; color: var(--ink-faint); }
+.row { display: flex; gap: 8px; }
+input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    font: inherit;
+    color: var(--ink);
+    background: var(--control);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+input[type="text"]:focus { outline: 2px solid var(--focus); }
+button, .button {
+    display: inline-block;
+    padding: 10px 18px;
+    font: inherit;
+    font-weight: 500;
+    color: var(--on-accent);
+    background: var(--accent);
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+button:disabled { opacity: .5; cursor: default; }
+.hint { margin: 8px 0 0; font-size: 14px; color: var(--ink-faint); }
+.status { margin: 8px 0 0; font-size: 14px; min-height: 20px; }
+.status.ok { color: var(--ok); }
+.status.error { color: var(--danger); }
+progress { width: 100%; margin-top: 8px; }
+</style>
+</head>
+<body
+    data-sent="{{sent}}"
+    data-sending="{{sending}}"
+    data-saved="{{saved}}"
+    data-need-permission="{{need_permission}}"
+    data-storage="{{storage}}"
+    data-cancelled="{{cancelled}}"
+    data-failed="{{failed}}"
+    data-bad-key="{{bad_key}}"
+    data-offline="{{offline}}">
+<main>
+  <h1>{{title}}</h1>
+  <p class="tv">{{tv}}</p>
+
+  <form id="textForm">
+    <h2>{{open_title}}</h2>
+    <div class="row">
+      <input type="text" id="text" name="text" autocomplete="off" autocapitalize="off" enterkeyhint="send"
+          maxlength="2048" placeholder="{{address_hint}}" required>
+      <button type="submit" id="send">{{send}}</button>
+    </div>
+    <p class="status" id="textStatus" role="status"></p>
+  </form>
+
+  <section>
+    <h2>{{files_title}}</h2>
+    <label class="button" for="files">{{choose_files}}</label>
+    <input type="file" id="files" multiple hidden>
+    <p class="hint">{{files_hint}}</p>
+    <progress id="progress" max="100" value="0" hidden></progress>
+    <p class="status" id="fileStatus" role="status"></p>
+  </section>
+</main>
+<script src="send.js"></script>
+</body>
+</html>

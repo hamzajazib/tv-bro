@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-The screen of the TV that pairs phones, over the whole window: the header (back, the title), then the QR code
-of the pairing with how to use it, and the paired phones with Undo of the last change of bookmarks.
+The screen of the TV that other devices send to, over the whole window: the header (back, the title), then
+the QR code with the short address, and what can be sent, the state of the connections, what came and New link.
 -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -33,7 +33,7 @@ of the pairing with how to use it, and the paired phones with Undo of the last c
         android:fontFamily="sans-serif-medium"
         android:textColor="?attr/tbColorDsInk"
         android:singleLine="true"
-        android:text="@string/sync_connect_phone" />
+        android:text="@string/send_title" />
   </LinearLayout>
 
   <View style="@style/Widget.TVBro.MenuSeparator" />
@@ -43,18 +43,18 @@ of the pairing with how to use it, and the paired phones with Undo of the last c
       android:layout_height="0dp"
       android:layout_weight="1"
       android:orientation="horizontal"
-      android:padding="@dimen/ds_sync_padding">
+      android:padding="@dimen/ds_send_padding">
 
     <LinearLayout
-        android:layout_width="@dimen/ds_sync_qr_column_width"
+        android:layout_width="@dimen/ds_send_qr_column_width"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
       <!-- dark modules on white in both themes: cameras read it best -->
       <FrameLayout
-          android:layout_width="@dimen/ds_sync_qr_size"
-          android:layout_height="@dimen/ds_sync_qr_size">
+          android:layout_width="@dimen/ds_send_qr_size"
+          android:layout_height="@dimen/ds_send_qr_size">
 
         <ImageView
             android:id="@+id/ivQr"
@@ -74,88 +74,109 @@ of the pairing with how to use it, and the paired phones with Undo of the last c
           style="@style/Widget.TVBro.Text.MenuItem"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginTop="@dimen/ds_sync_padding"
+          android:layout_marginTop="@dimen/ds_send_padding"
+          android:gravity="center_horizontal"
           android:fontFamily="sans-serif-medium"
           android:textColor="?attr/tbColorDsInk"
           android:textSize="@dimen/ds_text_address"
-          android:text="@string/sync_scan_title" />
-
-      <TextView
-          style="@style/Widget.TVBro.Text.MenuItem"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_marginTop="@dimen/ds_sync_text_gap"
-          android:textColor="?attr/tbColorDsInk"
-          android:text="@string/sync_scan_steps" />
+          android:text="@string/send_scan_title" />
 
       <TextView
           style="@style/Widget.TVBro.Text.MenuCaption"
-          android:id="@+id/tvNetwork"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginTop="@dimen/ds_sync_text_gap"
+          android:layout_marginTop="@dimen/ds_send_text_gap"
+          android:gravity="center_horizontal"
           android:textColor="?attr/tbColorDsInkFaint"
-          tools:text="The phone must be on the same network as the TV (192.168.0.120)." />
+          android:text="@string/send_or_open" />
+
+      <!-- the short address to type on a device without a camera -->
+      <TextView
+          android:id="@+id/tvAddress"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="@dimen/ds_send_text_gap"
+          android:gravity="center_horizontal"
+          android:fontFamily="monospace"
+          android:textStyle="bold"
+          android:textColor="?attr/tbColorDsInk"
+          android:textSize="@dimen/ds_text_address"
+          tools:text="tvbro.phlox.dev/c/K7Q2M9XP" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:layout_marginStart="@dimen/ds_sync_column_gap"
+        android:layout_marginStart="@dimen/ds_send_column_gap"
         android:orientation="vertical">
 
       <TextView
           style="@style/Widget.TVBro.Text.MenuItem"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
+          android:textColor="?attr/tbColorDsInk"
+          android:text="@string/send_what" />
+
+      <TextView
+          style="@style/Widget.TVBro.Text.MenuCaption"
+          android:id="@+id/tvCloud"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="@dimen/ds_send_text_gap"
+          android:textColor="?attr/tbColorDsInkFaint"
+          tools:text="Waiting for what you send" />
+
+      <TextView
+          style="@style/Widget.TVBro.Text.MenuCaption"
+          android:id="@+id/tvLocal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="@dimen/ds_send_text_gap"
+          android:textColor="?attr/tbColorDsInkFaint"
+          tools:text="Files can be sent from devices on the same network as the TV (http://192.168.0.120:8765/)" />
+
+      <TextView
+          style="@style/Widget.TVBro.Text.MenuItem"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="@dimen/ds_send_padding"
           android:fontFamily="sans-serif-medium"
           android:textColor="?attr/tbColorDsInk"
           android:textSize="@dimen/ds_text_address"
-          android:text="@string/sync_paired_phones" />
+          android:text="@string/send_received" />
 
-      <FrameLayout
+      <!-- not focusable: the list only tells what came -->
+      <TextView
+          style="@style/Widget.TVBro.Text.MenuItem"
+          android:id="@+id/tvReceived"
           android:layout_width="match_parent"
           android:layout_height="0dp"
           android:layout_weight="1"
-          android:layout_marginTop="@dimen/ds_sync_text_gap">
-
-        <com.phlox.tvwebbrowser.widgets.NearestFocusRecyclerView
-            android:id="@+id/rvPhones"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical" />
-
-        <TextView
-            style="@style/Widget.TVBro.Text.MenuItem"
-            android:id="@+id/tvNoPhones"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="?attr/tbColorDsInkFaint"
-            android:text="@string/sync_no_paired_phones"
-            android:visibility="gone" />
-      </FrameLayout>
+          android:layout_marginTop="@dimen/ds_send_text_gap"
+          android:lineSpacingMultiplier="1.3"
+          android:ellipsize="end"
+          android:textColor="?attr/tbColorDsInkFaint"
+          android:text="@string/send_nothing_received" />
 
       <LinearLayout
-          android:id="@+id/llUndoBookmarks"
+          android:id="@+id/llNewLink"
           android:layout_width="wrap_content"
           android:layout_height="@dimen/ds_size_chrome_control"
-          android:layout_marginTop="@dimen/ds_sync_text_gap"
+          android:layout_marginTop="@dimen/ds_send_text_gap"
           android:orientation="horizontal"
           android:gravity="center_vertical"
           android:paddingStart="@dimen/ds_downloads_header_button_padding"
           android:paddingEnd="@dimen/ds_downloads_header_button_padding"
           android:background="@drawable/ds_icon_button_bg"
           android:focusable="true"
-          android:clickable="true"
-          android:visibility="gone"
-          tools:visibility="visible">
+          android:clickable="true">
 
         <ImageView
             style="@style/Widget.TVBro.MenuIcon"
             android:layout_width="@dimen/ds_size_icon_toolbar"
             android:layout_height="@dimen/ds_size_icon_toolbar"
-            android:src="@drawable/ic_favorites" />
+            android:src="@drawable/ic_refresh" />
 
         <TextView
             style="@style/Widget.TVBro.Text.MenuItem"
@@ -164,7 +185,7 @@ of the pairing with how to use it, and the paired phones with Undo of the last c
             android:layout_marginStart="@dimen/ds_downloads_header_icon_text"
             android:fontFamily="sans-serif-medium"
             android:textColor="?attr/tbColorDsInk"
-            android:text="@string/sync_undo_bookmarks" />
+            android:text="@string/send_new_link" />
       </LinearLayout>
     </LinearLayout>
   </LinearLayout>

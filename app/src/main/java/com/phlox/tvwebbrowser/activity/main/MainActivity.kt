@@ -37,6 +37,8 @@ import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.Config
 import com.phlox.tvwebbrowser.R
 import com.phlox.tvwebbrowser.TVBro
+import com.phlox.tvwebbrowser.send.LegacySync
+import com.phlox.tvwebbrowser.send.SendSettings
 import com.phlox.tvwebbrowser.channels.HomeChannels
 import com.phlox.tvwebbrowser.activity.IncognitoModeMainActivity
 import com.phlox.tvwebbrowser.browser.BrowserCommands
@@ -48,7 +50,6 @@ import com.phlox.tvwebbrowser.browser.UrlInputResolver
 import com.phlox.tvwebbrowser.model.HostConfig
 import com.phlox.tvwebbrowser.model.BrowserTab
 import com.phlox.tvwebbrowser.singleton.shortcuts.ShortcutMgr
-import com.phlox.tvwebbrowser.sync.SyncLink
 import com.phlox.tvwebbrowser.utils.BackNavigationEventsAdapter
 import com.phlox.tvwebbrowser.utils.JoystickDpadRouter
 import com.phlox.tvwebbrowser.utils.OverlayBackInvokedCallback
@@ -106,8 +107,8 @@ open class MainActivity : AppCompatActivity(), BrowserShell.Host {
 
         /**
          * The intent that starts the browser activity of the other process (incognito or not) and makes it
-         * kill this one. [source] (an intent that came to the activity of the wrong process: a link to open,
-         * a sync link) goes there whole, so it is handled as if it had come there.
+         * kill this one. [source] (an intent that came to the activity of the wrong process: a link to
+         * open) goes there whole, so it is handled as if it had come there.
          */
         internal fun switchProcessIntent(context: Context, incognitoMode: Boolean, source: Intent?, pidToKill: Int): Intent {
             val activityClass = if (incognitoMode) IncognitoModeMainActivity::class.java
@@ -176,6 +177,7 @@ open class MainActivity : AppCompatActivity(), BrowserShell.Host {
             WebEngineFactory.prepareIncognitoProcess()
         }
         AppSettingsStore.rememberStartupValues(config)
+        lifecycleScope.launch(Dispatchers.IO) { LegacySync.drop(applicationContext, SendSettings(applicationContext, config.prefs)) }
         settingsModel = ActiveModelsRepository.get(SettingsModel::class, this)
         controller = ActiveModelsRepository.get(BrowserController::class, this)
         autoUpdateModel = ActiveModelsRepository.get(AutoUpdateModel::class, this)
@@ -493,10 +495,6 @@ open class MainActivity : AppCompatActivity(), BrowserShell.Host {
     private fun handleIntent(intent: Intent) {
         Log.d(TAG, "handleIntent: " + intent.data?.buildUpon()?.fragment(null)?.build())
         val url = intent.data.toString()
-        if (SyncLink.isSyncUrl(url) && shell.handleSyncLink(SyncLink.parse(url))) {
-            if (controller.currentTab.value == null) controller.selectStartTab()
-            return
-        }
         //a tile of a home screen channel: the tab that is there already
         val tabId = intent.getLongExtra(EXTRA_TAB_ID, 0L)
         val reuseUrl = if (intent.getBooleanExtra(EXTRA_REUSE_TAB, false)) url else null
