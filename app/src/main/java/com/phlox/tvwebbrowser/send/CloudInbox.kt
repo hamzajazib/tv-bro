@@ -62,6 +62,9 @@ class CloudInbox(
 
     suspend fun putInfo(inbox: String, info: Info) = write("PUT", "inbox/${encode(inbox)}/info", info.toJson())
 
+    /** The TV stopped listening: nothing of it stays in the database (the page tells it does not wait) */
+    suspend fun deleteInfo(inbox: String) = write("DELETE", "inbox/${encode(inbox)}/info", null)
+
     /** The code must be new: the rules refuse to overwrite one */
     suspend fun putCode(code: String, inbox: String, expires: Long) =
         write("PUT", "codes/${encode(code)}", JSONObject().put("inbox", inbox).put("exp", expires))

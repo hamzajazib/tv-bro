@@ -58,6 +58,7 @@ class CloudInboxTest {
         cloud.putCode("K7Q2M9XP", "inbox1", 200L)
         cloud.deleteMessage("inbox1", "-m1")
         cloud.deleteCode("K7Q2M9XP")
+        cloud.deleteInfo("inbox1")
         assertEquals("PUT /inbox/inbox1/info.json", requests[0].substringBefore(" {"))
         val info = JSONObject(requests[0].substringAfter(" {").let { "{$it" })
         assertEquals("Living room", info.getString("name"))
@@ -67,6 +68,7 @@ class CloudInboxTest {
         assertEquals("PUT /codes/K7Q2M9XP.json {\"inbox\":\"inbox1\",\"exp\":200}", requests[1])
         assertEquals("DELETE /inbox/inbox1/msgs/-m1.json", requests[2])
         assertEquals("DELETE /codes/K7Q2M9XP.json", requests[3])
+        assertEquals("DELETE /inbox/inbox1/info.json", requests[4])
         //the clock of the server comes from its Date
         val serverTime = 1794218400000L
         assertTrue(Math.abs(cloud.serverTime() - serverTime) < 5_000)

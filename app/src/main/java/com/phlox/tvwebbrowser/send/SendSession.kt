@@ -83,7 +83,8 @@ class SendSession(
     }
 
     /**
-     * Stops listening to the cloud and the local network at once; the page of the site learns it from the info.
+     * Stops listening to the cloud and the local network at once and deletes the info and the code of the TV
+     * (the page of the site then tells the TV does not wait; the database keeps nothing of it).
      * @param abort also cuts the files that are coming (the activity is destroyed)
      */
     fun close(abort: Boolean = false) {
@@ -108,9 +109,8 @@ class SendSession(
         val state = _state.value
         _state.value = null
         if (state != null) {
-            val stopped = CloudInbox.Info(settings.deviceName, emptyList(), "", 0L)
             cleanupScope.launch {
-                ignoreErrors { cloud.putInfo(state.inbox, stopped) }
+                ignoreErrors { cloud.deleteInfo(state.inbox) }
                 state.code?.let { ignoreErrors { cloud.deleteCode(it) } }
             }
         }
