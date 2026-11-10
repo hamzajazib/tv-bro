@@ -1,6 +1,7 @@
 package com.phlox.tvwebbrowser.activity.main.view
 
 import android.content.Context
+import android.graphics.Color
 import android.text.InputType
 import android.util.AttributeSet
 import android.view.KeyEvent
@@ -283,12 +284,20 @@ class SettingsRowsView @JvmOverloads constructor(
         private val flAction: View = view.findViewById(R.id.flAction)
         private val btnAction: TextView = view.findViewById(R.id.btnAction)
         private val pbBusy: ProgressBar = view.findViewById(R.id.pbBusy)
+        private val actionTextColors = btnAction.textColors
         /** The text the row was bound with: a different one in the field was typed */
         private var boundText: String? = null
 
         init {
             view.background = null
-            etValue.setOnFocusChangeListener { _, focused -> if (!focused) commit() }
+            etValue.setOnFocusChangeListener { _, focused ->
+                if (!focused) {
+                    commit()
+                } else if ((row as? Row.Field)?.action != null) {
+                    //the cursor at the end, so Right of the remote goes to the button, not through the text
+                    etValue.post { if (etValue.isFocused) etValue.setSelection(etValue.text.length) }
+                }
+            }
             etValue.setOnEditorActionListener { _, actionId, event ->
                 if (actionId == EditorInfo.IME_ACTION_DONE ||
                     (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP)) {
@@ -323,7 +332,8 @@ class SettingsRowsView @JvmOverloads constructor(
             etValue.contentDescription = row.title
             flAction.isVisible = row.action != null
             btnAction.text = row.action
-            btnAction.visibility = if (row.busy) INVISIBLE else VISIBLE
+            //the button stays while it is busy, without its text: hidden, it would lose the focus of the remote
+            if (row.busy) btnAction.setTextColor(Color.TRANSPARENT) else btnAction.setTextColor(actionTextColors)
             pbBusy.isVisible = row.busy
         }
 
