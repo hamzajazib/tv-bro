@@ -456,6 +456,13 @@
   <string name="settings_custom_url">自定义网址</string>
   <string name="settings_search_url">搜索地址</string>
   <string name="settings_search_url_hint">用 [query] 代替搜索词的地址</string>
+  <string name="settings_search_suggestions">搜索建议</string>
+  <string name="settings_search_suggestions_summary">您在地址栏中输入的内容会发送给搜索引擎。网址不会发送。无痕模式下关闭。</string>
+  <string name="settings_search_suggest_url">建议地址</string>
+  <string name="settings_search_suggest_url_hint">用 [query] 代替搜索词的地址</string>
+  <string name="settings_search_suggest_detect">检测</string>
+  <string name="settings_search_suggest_not_found">该网站未提供其建议地址</string>
+  <string name="search_suggestion_fill">填入地址栏</string>
   <string name="settings_group_home_page">主页</string>
   <string name="settings_home_page_summary">主页按钮打开的页面</string>
   <string name="settings_home_page_url">主页地址</string>

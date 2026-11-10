@@ -495,6 +495,13 @@
   <string name="settings_custom_url">Свой URL</string>
   <string name="settings_search_url">Адрес поиска</string>
   <string name="settings_search_url_hint">Адрес с [query] на месте слов</string>
+  <string name="settings_search_suggestions">Подсказки поиска</string>
+  <string name="settings_search_suggestions_summary">То, что вы набираете в адресной строке, отправляется поисковой системе. Адреса не отправляются. Не работает в режиме инкогнито.</string>
+  <string name="settings_search_suggest_url">Адрес подсказок</string>
+  <string name="settings_search_suggest_url_hint">Адрес с [query] на месте слов</string>
+  <string name="settings_search_suggest_detect">Определить</string>
+  <string name="settings_search_suggest_not_found">Сайт не сообщает адрес своих подсказок</string>
+  <string name="search_suggestion_fill">Вставить в адресную строку</string>
   <string name="settings_group_home_page">Домашняя страница</string>
   <string name="settings_home_page_summary">Страница кнопки «Домой»</string>
   <string name="settings_home_page_url">Адрес домашней страницы</string>

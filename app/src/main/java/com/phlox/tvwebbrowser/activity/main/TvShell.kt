@@ -47,6 +47,7 @@ import com.phlox.tvwebbrowser.browser.BrowserUiEvent
 import com.phlox.tvwebbrowser.browser.DownloadEvent
 import com.phlox.tvwebbrowser.browser.DownloadsModel
 import com.phlox.tvwebbrowser.browser.StreamDownloads
+import com.phlox.tvwebbrowser.browser.search.SearchEngineSuggestions
 import com.phlox.tvwebbrowser.browser.CurrentTabState
 import com.phlox.tvwebbrowser.databinding.ActivityMainBinding
 import com.phlox.tvwebbrowser.model.BrowserTab
@@ -948,14 +949,14 @@ class TvShell(private val host: BrowserShell.Host) : BrowserShell, ActionBar.Cal
 
     override fun openUrl(url: String) = host.navigate(url)
 
-    /** The suggestions of the history under the address while it is edited */
+    /** The suggestions of the history and of the search engine under the address while it is edited */
     private val addressSuggestions = AddressSuggestions(TVBro.container.data.history, lifecycleScope,
         object : AddressSuggestions.Host {
             override fun render(rows: List<AddressSuggestions.Row>) {
                 if (rows.isNotEmpty()) placeAddressSuggestions()
                 vb.vAddressSuggestions.render(rows)
             }
-        })
+        }, searchSource = SearchEngineSuggestions(AppContext.provideConfig()))
 
     /** The list of the suggestions goes under the address field, as wide as it */
     private fun placeAddressSuggestions() {

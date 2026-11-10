@@ -495,6 +495,13 @@
   <string name="settings_custom_url">Własny URL</string>
   <string name="settings_search_url">Adres wyszukiwania</string>
   <string name="settings_search_url_hint">Adres z [query] w miejscu słów</string>
+  <string name="settings_search_suggestions">Podpowiedzi wyszukiwania</string>
+  <string name="settings_search_suggestions_summary">To, co wpisujesz w pasku adresu, jest wysyłane do wyszukiwarki. Adresy nie są wysyłane. Wyłączone w trybie incognito.</string>
+  <string name="settings_search_suggest_url">Adres podpowiedzi</string>
+  <string name="settings_search_suggest_url_hint">Adres z [query] w miejscu słów</string>
+  <string name="settings_search_suggest_detect">Wykryj</string>
+  <string name="settings_search_suggest_not_found">Witryna nie podaje adresu swoich podpowiedzi</string>
+  <string name="search_suggestion_fill">Wstaw do paska adresu</string>
   <string name="settings_group_home_page">Strona główna</string>
   <string name="settings_home_page_summary">Strona przycisku strony głównej</string>
   <string name="settings_home_page_url">Adres strony głównej</string>

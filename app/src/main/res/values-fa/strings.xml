@@ -469,6 +469,13 @@
   <string name="settings_custom_url">URL سفارشی</string>
   <string name="settings_search_url">نشانی جستجو</string>
   <string name="settings_search_url_hint">نشانی با [query] به جای واژه‌ها</string>
+  <string name="settings_search_suggestions">پیشنهادهای جستجو</string>
+  <string name="settings_search_suggestions_summary">آنچه در نوار نشانی می‌نویسید برای موتور جستجو فرستاده می‌شود. نشانی‌ها فرستاده نمی‌شوند. در حالت ناشناس خاموش است.</string>
+  <string name="settings_search_suggest_url">نشانی پیشنهادها</string>
+  <string name="settings_search_suggest_url_hint">نشانی با [query] به‌جای واژه‌ها</string>
+  <string name="settings_search_suggest_detect">تشخیص</string>
+  <string name="settings_search_suggest_not_found">این سایت نشانی پیشنهادهایش را اعلام نمی‌کند</string>
+  <string name="search_suggestion_fill">گذاشتن در نوار نشانی</string>
   <string name="settings_group_home_page">صفحه اصلی</string>
   <string name="settings_home_page_summary">صفحه دکمه خانه</string>
   <string name="settings_home_page_url">نشانی صفحه اصلی</string>

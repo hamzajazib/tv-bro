@@ -456,6 +456,13 @@
     <string name="settings_custom_url">自訂網址</string>
     <string name="settings_search_url">搜尋網址</string>
     <string name="settings_search_url_hint">以 [query] 代替搜尋字詞的網址</string>
+    <string name="settings_search_suggestions">搜尋建議</string>
+    <string name="settings_search_suggestions_summary">您在網址列輸入的內容會傳送給搜尋引擎。網址不會傳送。無痕模式下關閉。</string>
+    <string name="settings_search_suggest_url">建議網址</string>
+    <string name="settings_search_suggest_url_hint">以 [query] 取代搜尋字詞的網址</string>
+    <string name="settings_search_suggest_detect">偵測</string>
+    <string name="settings_search_suggest_not_found">此網站未提供其建議網址</string>
+    <string name="search_suggestion_fill">填入網址列</string>
     <string name="settings_group_home_page">首頁</string>
     <string name="settings_home_page_summary">首頁按鈕開啟的頁面</string>
     <string name="settings_home_page_url">首頁網址</string>

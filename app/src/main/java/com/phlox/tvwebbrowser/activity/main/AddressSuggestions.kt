@@ -4,22 +4,27 @@ import com.phlox.tvwebbrowser.model.HistoryItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
 /**
- * The suggestions of the address field (no views), from the browsing history: the rows of the list under
- * (TV) or above (phone) the field, and the address the field completes inline as the user types. The
- * history is loaded when the editing starts ([start]) and searched in memory, as the history screens do:
- * one entry per url (its visits counted), ranked by how the text matches it, then by visits and recency.
+ * The suggestions of the address field (no views): the rows of the list under (TV) or above (phone) the
+ * field, and the address the field completes inline as the user types. The pages come from the browsing
+ * history, which is loaded when the editing starts ([start]) and searched in memory, as the history screens
+ * do: one entry per url (its visits counted), ranked by how the text matches it, then by visits and recency.
+ * After them come the searches the search engine suggests for the text ([searchSource], asked once the
+ * typing pauses for [searchDelayMs]; its answers are kept while the address is edited).
  */
 class AddressSuggestions(
     private val history: Store,
     private val scope: CoroutineScope,
     private val host: Host,
     private val searchContext: CoroutineContext = Dispatchers.Default,
-    private val clock: () -> Long = System::currentTimeMillis
+    private val clock: () -> Long = System::currentTimeMillis,
+    private val searchSource: SearchSource? = null,
+    private val searchDelayMs: Long = SEARCH_DELAY_MS
 ) {
     interface Store {
         /** The whole history, the latest items first */
@@ -31,8 +36,31 @@ class AddressSuggestions(
         fun render(rows: List<Row>)
     }
 
-    /** A row of the list: the [words] of the text are marked in its title and address */
-    data class Row(val url: String, val title: String, val address: String, val words: List<String>)
+    /** The suggestions of the search engine */
+    interface SearchSource {
+        /** The engine is asked about the [text]: its suggestions are on and the text is not an address */
+        fun asks(text: String): Boolean
+
+        /** The searches the engine suggests for the [text]; null when it gave no answer */
+        suspend fun suggest(text: String): List<String>?
+    }
+
+    /** A row of the list: the [words] of the text are marked in it */
+    sealed class Row {
+        /** Tells the rows of a list apart */
+        abstract val id: String
+        abstract val words: List<String>
+
+        /** A page of the history, with its title and address */
+        data class Page(val url: String, val title: String, val address: String, override val words: List<String>) : Row() {
+            override val id: String get() = url
+        }
+
+        /** A search the search engine suggests */
+        data class Search(val text: String, override val words: List<String>) : Row() {
+            override val id: String get() = "search:$text"
+        }
+    }
 
     /**
      * The address the field completes the typed text to: [text] starts with what was typed (its case kept),
@@ -51,9 +79,18 @@ class AddressSuggestions(
     private var entries: List<Entry> = emptyList()
     private var loadJob: Job? = null
     private var searchJob: Job? = null
+    private var suggestJob: Job? = null
     private var initialText = ""
     private var query = ""
     private var shown: List<Row> = emptyList()
+    /** The pages of the history for the [query] */
+    private var pages: List<Row.Page> = emptyList()
+    /** The searches shown: those of the [query], or the earlier ones that fit it while it is asked about */
+    private var searches: List<String> = emptyList()
+    /** The engine is being asked about the [query] */
+    private var asking = false
+    /** The answers of the engine by their texts, while the address is edited */
+    private val answers = HashMap<String, List<String>>()
 
     /** The editing starts with [initialText] in the field: nothing is suggested for it */
     fun start(initialText: String) {
@@ -63,7 +100,7 @@ class AddressSuggestions(
         loadJob = scope.launch {
             val items = history.all()
             entries = withContext(searchContext) { aggregate(items, clock()) }
-            search(query)
+            searchHistory(query)
         }
     }
 
@@ -71,9 +108,14 @@ class AddressSuggestions(
     fun stop() {
         loadJob?.cancel()
         searchJob?.cancel()
+        suggestJob?.cancel()
         entries = emptyList()
         initialText = ""
         query = ""
+        pages = emptyList()
+        searches = emptyList()
+        asking = false
+        answers.clear()
         render(emptyList())
     }
 
@@ -81,24 +123,66 @@ class AddressSuggestions(
     fun query(text: String) {
         if (text == query) return
         query = text
-        search(text)
+        searchHistory(text)
+        askSearchEngine(text)
     }
 
     /** The address the [typed] text completes to, null when nothing fits */
     fun inlineCompletion(typed: String): InlineCompletion? =
         if (typed == initialText) null else inlineCandidate(entries, typed)
 
-    private fun search(text: String) {
+    private fun searchHistory(text: String) {
         searchJob?.cancel()
         val entries = entries
         if (entries.isEmpty() || text == initialText || wordsOf(text).isEmpty()) {
-            render(emptyList())
+            pages = emptyList()
+            update()
             return
         }
         searchJob = scope.launch {
             val rows = withContext(searchContext) { rank(entries, text) }
-            if (text == query) render(rows)
+            if (text != query) return@launch
+            pages = rows
+            update()
         }
+    }
+
+    private fun askSearchEngine(text: String) {
+        suggestJob?.cancel()
+        asking = false
+        val source = searchSource
+        if (source == null || text == initialText || !source.asks(text)) {
+            searches = emptyList()
+            update()
+            return
+        }
+        val key = text.trim()
+        val known = answers[key]
+        if (known != null) {
+            searches = known
+            update()
+            return
+        }
+        //until the answer comes the earlier ones that still fit stay, so the list does not blink
+        searches = searchesFor(searches, key).filter { it.startsWith(key, ignoreCase = true) }
+        asking = true
+        update()
+        suggestJob = scope.launch {
+            delay(searchDelayMs)
+            val answer = source.suggest(key)?.let { searchesFor(it, key) }
+            if (text != query) return@launch
+            asking = false
+            if (answer != null) {
+                answers[key] = answer
+                searches = answer
+            }
+            update()
+        }
+    }
+
+    private fun update() {
+        val words = wordsOf(query)
+        render(merge(pages, searches.map { Row.Search(it, words) }, asking))
     }
 
     private fun render(rows: List<Row>) {
@@ -109,6 +193,9 @@ class AddressSuggestions(
 
     companion object {
         const val MAX_ROWS = 6
+        /** The rows each kind (pages, searches) has when both have more */
+        const val SHARE = 3
+        const val SEARCH_DELAY_MS = 200L
         private const val DAY = 24 * 60 * 60 * 1000L
         private val SCHEMES = listOf("http://", "https://")
 
@@ -196,8 +283,26 @@ class AddressSuggestions(
             return false
         }
 
+        /** The [suggestions] of the engine to show for the [text]: each once, without the text itself */
+        fun searchesFor(suggestions: List<String>, text: String): List<String> {
+            val seen = hashSetOf(text.trim().lowercase())
+            return suggestions.filter { seen.add(it.trim().lowercase()) }
+        }
+
+        /**
+         * The rows of the list, at most [MAX_ROWS]: the [pages], then the [searches]; when there are more of
+         * both, each kind has [SHARE] rows, else one takes the rows the other leaves. While the engine is
+         * [asking], the rows of its answer are left free, so the pages do not go when it comes.
+         */
+        fun merge(pages: List<Row.Page>, searches: List<Row.Search>, asking: Boolean = false): List<Row> {
+            val expected = if (asking) maxOf(searches.size, MAX_ROWS - SHARE) else searches.size
+            val pageRows = minOf(pages.size, maxOf(SHARE, MAX_ROWS - expected))
+            val searchRows = minOf(searches.size, MAX_ROWS - pageRows)
+            return pages.take(pageRows) + searches.take(searchRows)
+        }
+
         /** The rows for the [text]: the entries that match it, the best first, at most [MAX_ROWS] */
-        fun rank(entries: List<Entry>, text: String): List<Row> {
+        fun rank(entries: List<Entry>, text: String): List<Row.Page> {
             val words = wordsOf(text)
             if (words.isEmpty()) return emptyList()
             //the entries are sorted by score already, a stable sort keeps that order in each class
@@ -209,12 +314,12 @@ class AddressSuggestions(
                 .toList()
         }
 
-        private fun rowOf(entry: Entry, words: List<String>): Row {
+        private fun rowOf(entry: Entry, words: List<String>): Row.Page {
             val item = HistoryItem().also {
                 it.url = entry.url
                 it.title = entry.title
             }
-            return Row(entry.url, entry.title.ifBlank { entry.noScheme }, HistoryNavigator.addressOf(item, words), words)
+            return Row.Page(entry.url, entry.title.ifBlank { entry.noScheme }, HistoryNavigator.addressOf(item, words), words)
         }
 
         /**

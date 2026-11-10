@@ -495,6 +495,13 @@
   <string name="settings_custom_url">Власна URL-адреса</string>
   <string name="settings_search_url">Адреса пошуку</string>
   <string name="settings_search_url_hint">Адреса з [query] на місці слів</string>
+  <string name="settings_search_suggestions">Підказки пошуку</string>
+  <string name="settings_search_suggestions_summary">Те, що ви набираєте в адресному рядку, надсилається пошуковій системі. Адреси не надсилаються. Не працює в режимі інкогніто.</string>
+  <string name="settings_search_suggest_url">Адреса підказок</string>
+  <string name="settings_search_suggest_url_hint">Адреса з [query] на місці слів</string>
+  <string name="settings_search_suggest_detect">Визначити</string>
+  <string name="settings_search_suggest_not_found">Сайт не повідомляє адресу своїх підказок</string>
+  <string name="search_suggestion_fill">Вставити в адресний рядок</string>
   <string name="settings_group_home_page">Домашня сторінка</string>
   <string name="settings_home_page_summary">Сторінка кнопки «Додому»</string>
   <string name="settings_home_page_url">Адреса домашньої сторінки</string>

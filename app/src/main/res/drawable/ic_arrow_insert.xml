@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Insert: puts a suggested search into the address field -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:tint="@color/icon_tint" android:height="24dp" android:viewportHeight="24.0" android:viewportWidth="24.0" android:width="24dp">
+    <path android:fillColor="@android:color/white" android:pathData="M5,15h2V8.41L18.59,20L20,18.59L8.41,7H15V5H5V15z"/>
+</vector>

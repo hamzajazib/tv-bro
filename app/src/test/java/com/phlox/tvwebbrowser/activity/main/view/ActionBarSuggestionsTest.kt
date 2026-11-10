@@ -38,6 +38,11 @@ class ActionBarSuggestionsTest {
     private lateinit var bar: ActionBar
     private lateinit var list: AddressSuggestionsView
     private val log = ArrayList<String>()
+    /** The searches the engine suggests for a text with "news" */
+    private val engine = object : AddressSuggestions.SearchSource {
+        override fun asks(text: String) = text.contains("news")
+        override suspend fun suggest(text: String) = listOf("news today", "news kyiv")
+    }
     private val history = listOf(
         HistoryItem().apply { url = "http://example.com/a"; title = "Page A"; time = 3 },
         HistoryItem().apply { url = "http://example.com/b"; title = "Page B"; time = 2 },
@@ -62,7 +67,7 @@ class ActionBarSuggestionsTest {
             override suspend fun all() = history
         }, CoroutineScope(Dispatchers.Unconfined), object : AddressSuggestions.Host {
             override fun render(rows: List<AddressSuggestions.Row>) = list.render(rows)
-        }, searchContext = EmptyCoroutineContext, clock = { 4 })
+        }, searchContext = EmptyCoroutineContext, clock = { 4 }, searchSource = engine, searchDelayMs = 0)
         bar.setSuggestions(suggestions, list)
         bar.callback = object : ActionBar.Callback {
             override fun closeWindow() {}
@@ -109,7 +114,8 @@ class ActionBarSuggestionsTest {
     @Test
     fun downAndUpChooseASuggestionAndOkOpensIt() {
         startEditing("page")
-        assertEquals(listOf("http://example.com/a", "http://example.com/b"), list.rows.map { it.url })
+        assertEquals(listOf("http://example.com/a", "http://example.com/b"),
+            list.rows.map { (it as AddressSuggestions.Row.Page).url })
         press(KeyEvent.KEYCODE_DPAD_DOWN)
         press(KeyEvent.KEYCODE_DPAD_DOWN)
         assertEquals(1, list.highlighted)
@@ -156,6 +162,48 @@ class ActionBarSuggestionsTest {
         mouseClick()
         assertTrue(bar.isEditingAddress())
         assertTrue(field.hasFocus())
+    }
+
+    @Test
+    fun okOnASuggestedSearchSearchesIt() {
+        startEditing("news")
+        assertEquals(listOf("search:news today", "search:news kyiv"), list.rows.map { it.id })
+        press(KeyEvent.KEYCODE_DPAD_DOWN)
+        press(KeyEvent.KEYCODE_DPAD_DOWN)
+        press(KeyEvent.KEYCODE_DPAD_CENTER)
+        assertEquals(listOf("search news kyiv"), log)
+        assertFalse(bar.isEditingAddress())
+    }
+
+    @Test
+    fun rightOnASuggestedSearchPutsItIntoTheFieldToGoOn() {
+        startEditing("news")
+        press(KeyEvent.KEYCODE_DPAD_DOWN)
+        press(KeyEvent.KEYCODE_DPAD_RIGHT)
+        assertEquals("news today ", field.text.toString())
+        assertEquals(field.text.length, field.selectionStart)
+        assertEquals(field.text.length, field.selectionEnd)
+        assertEquals(-1, list.highlighted)
+        assertTrue(bar.isEditingAddress())
+        assertTrue(field.hasFocus())
+        assertTrue(log.isEmpty())
+        //the list follows the new text, and the typing goes on after it
+        assertEquals(listOf("search:news kyiv"), list.rows.map { it.id })
+        field.text.append("x")
+        idle()
+        assertEquals("news today x", field.text.toString())
+        press(KeyEvent.KEYCODE_ENTER)
+        assertEquals(listOf("search news today x"), log)
+    }
+
+    @Test
+    fun rightOnAPageOnlyGoesBackToTheText() {
+        startEditing("page")
+        press(KeyEvent.KEYCODE_DPAD_DOWN)
+        press(KeyEvent.KEYCODE_DPAD_RIGHT)
+        assertEquals(-1, list.highlighted)
+        assertEquals("page", field.text.toString())
+        assertTrue(log.isEmpty())
     }
 
     @Test

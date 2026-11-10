@@ -483,6 +483,13 @@
     <string name="settings_custom_url">URL personalizada</string>
     <string name="settings_search_url">Dirección de búsqueda</string>
     <string name="settings_search_url_hint">Dirección con [query] en lugar de las palabras</string>
+    <string name="settings_search_suggestions">Sugerencias de búsqueda</string>
+    <string name="settings_search_suggestions_summary">Lo que escribe en la barra de direcciones se envía al buscador. Las direcciones no se envían. Desactivado en modo incógnito.</string>
+    <string name="settings_search_suggest_url">Dirección de sugerencias</string>
+    <string name="settings_search_suggest_url_hint">Dirección con [query] en lugar de las palabras</string>
+    <string name="settings_search_suggest_detect">Detectar</string>
+    <string name="settings_search_suggest_not_found">El sitio no indica la dirección de sus sugerencias</string>
+    <string name="search_suggestion_fill">Poner en la barra de direcciones</string>
     <string name="settings_group_home_page">Página de inicio</string>
     <string name="settings_home_page_summary">La página del botón Inicio</string>
     <string name="settings_home_page_url">Dirección de la página de inicio</string>

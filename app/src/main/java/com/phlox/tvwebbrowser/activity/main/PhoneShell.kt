@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.R
 import com.phlox.tvwebbrowser.TVBro
 import com.phlox.tvwebbrowser.activity.main.view.ClearDownloadsDialog
@@ -20,6 +21,7 @@ import com.phlox.tvwebbrowser.activity.main.view.ScrollAwayBar
 import com.phlox.tvwebbrowser.activity.main.view.SiteSettingsView
 import com.phlox.tvwebbrowser.browser.BrowserUiEvent
 import com.phlox.tvwebbrowser.browser.CurrentTabState
+import com.phlox.tvwebbrowser.browser.search.SearchEngineSuggestions
 import com.phlox.tvwebbrowser.browser.DownloadEvent
 import com.phlox.tvwebbrowser.browser.DownloadsModel
 import com.phlox.tvwebbrowser.databinding.ActivityMainPhoneBinding
@@ -338,11 +340,11 @@ class PhoneShell(private val host: BrowserShell.Host) : BrowserShell {
         vb.vFindBar.focusField()
     }
 
-    /** The suggestions of the history above the bar while the address is edited */
+    /** The suggestions of the history and of the search engine above the bar while the address is edited */
     private val addressSuggestions = AddressSuggestions(TVBro.container.data.history, activity.lifecycleScope,
         object : AddressSuggestions.Host {
             override fun render(rows: List<AddressSuggestions.Row>) = vb.vAddressSuggestions.render(rows)
-        })
+        }, searchSource = SearchEngineSuggestions(AppContext.provideConfig()))
 
     //after the callbacks: properties are initialized in their order
     init {

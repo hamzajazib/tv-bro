@@ -470,6 +470,13 @@
     <string name="settings_custom_url">Προσαρμοσμένο URL</string>
     <string name="settings_search_url">Διεύθυνση αναζήτησης</string>
     <string name="settings_search_url_hint">Διεύθυνση με [query] στη θέση των λέξεων</string>
+    <string name="settings_search_suggestions">Προτάσεις αναζήτησης</string>
+    <string name="settings_search_suggestions_summary">Ό,τι πληκτρολογείτε στη γραμμή διευθύνσεων αποστέλλεται στη μηχανή αναζήτησης. Οι διευθύνσεις δεν αποστέλλονται. Ανενεργό στην ανώνυμη περιήγηση.</string>
+    <string name="settings_search_suggest_url">Διεύθυνση προτάσεων</string>
+    <string name="settings_search_suggest_url_hint">Διεύθυνση με [query] στη θέση των λέξεων</string>
+    <string name="settings_search_suggest_detect">Εντοπισμός</string>
+    <string name="settings_search_suggest_not_found">Ο ιστότοπος δεν δηλώνει τη διεύθυνση των προτάσεών του</string>
+    <string name="search_suggestion_fill">Εισαγωγή στη γραμμή διευθύνσεων</string>
     <string name="settings_group_home_page">Αρχική σελίδα</string>
     <string name="settings_home_page_summary">Η σελίδα του κουμπιού Αρχική</string>
     <string name="settings_home_page_url">Διεύθυνση αρχικής σελίδας</string>
