@@ -98,14 +98,23 @@ object DownloadFiles {
             ?: throw IOException("Can not open the file")
     }
 
-    /** Makes the complete file visible to other apps: only MediaStore items are hidden while they are pending */
-    fun publish(context: Context, filepath: String) {
-        if (kindOf(filepath) != Kind.MEDIA_STORE) return
+    /**
+     * Makes the complete file visible to other apps: only MediaStore items are hidden while they are pending.
+     * Returns the name the file got, or null when it is not known: MediaStore gives a pending item its free
+     * name (with " (1)" when the name is taken) only when it publishes it.
+     */
+    fun publish(context: Context, filepath: String): String? {
+        if (kindOf(filepath) != Kind.MEDIA_STORE) return null
+        val uri = Uri.parse(filepath)
         try {
-            context.contentResolver.update(Uri.parse(filepath),
+            context.contentResolver.update(uri,
                 ContentValues().apply { put(MediaStore.Downloads.IS_PENDING, 0) }, null, null)
+            context.contentResolver.query(uri, arrayOf(MediaStore.Downloads.DISPLAY_NAME), null, null, null)?.use {
+                if (it.moveToFirst()) return it.getString(0)?.takeIf { name -> name.isNotEmpty() }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Can not publish $filepath", e)
         }
+        return null
     }
 }

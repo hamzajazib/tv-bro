@@ -178,7 +178,7 @@ abstract class DownloadTask(val download: Download, private val listener: Listen
         when (status) {
             Download.Status.DONE -> {
                 download.size = download.bytesReceived
-                DownloadFiles.publish(AppContext.get(), download.filepath)
+                DownloadFiles.publish(AppContext.get(), download.filepath)?.let { download.filename = it }
             }
             //the file is kept to resume the download
             Download.Status.PAUSED -> {}
@@ -271,7 +271,7 @@ internal fun openOutput(download: Download, folder: Uri?): FileOutputStream {
         val uri = resolver.insert(MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), values)
             ?: throw IOException("Can not create the file")
         download.filepath = uri.toString()
-        //MediaStore renames the file if the name is taken
+        //a pending item keeps the name asked for: the free one comes when it is published (DownloadFiles.publish)
         resolver.query(uri, arrayOf(MediaStore.Downloads.DISPLAY_NAME), null, null, null)?.use {
             if (it.moveToFirst()) download.filename = it.getString(0)
         }
