@@ -545,8 +545,13 @@
   <string name="settings_joystick">用摇杆移动光标</string>
   <string name="settings_joystick_summary">游戏手柄的左摇杆可平滑地移动光标。若光标自行漂移，请关闭此项</string>
   <string name="settings_group_keys">遥控器按键</string>
-  <string name="settings_press_key">按下遥控器上的按键。按住可设置长按</string>
+  <string name="settings_press_key">按下遥控器上的按键即可添加到此操作。按住可添加长按</string>
   <string name="settings_key_now_s">当前：%s</string>
+  <string name="next_tab">下一个标签页</string>
+  <string name="previous_tab">上一个标签页</string>
+  <string name="settings_keys_default">默认</string>
+  <string name="settings_keys_max_d">每个操作最多 %d 个按键：新的按键会替换最早的按键</string>
+  <string name="settings_key_taken_s_s">%1$s 已用于“%2$s”。再按一次即可改为用于此处</string>
   <string name="settings_web_cache">网页缓存</string>
   <string name="settings_web_cache_summary">页面将重新从网络加载</string>
   <string name="settings_web_cache_cleared">网页缓存已清除</string>

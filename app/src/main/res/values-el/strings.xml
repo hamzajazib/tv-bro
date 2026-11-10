@@ -560,8 +560,13 @@
     <string name="settings_joystick">Μετακίνηση δρομέα με τους μοχλούς</string>
     <string name="settings_joystick_summary">Ο αριστερός μοχλός του χειριστηρίου παιχνιδιών μετακινεί ομαλά τον δρομέα. Απενεργοποιήστε το αν ο δρομέας κινείται μόνος του</string>
     <string name="settings_group_keys">Πλήκτρα τηλεχειριστηρίου</string>
-    <string name="settings_press_key">Πατήστε ένα πλήκτρο στο τηλεχειριστήριο. Κρατήστε το πατημένο για παρατεταμένο πάτημα</string>
+    <string name="settings_press_key">Πατήστε ένα πλήκτρο στο τηλεχειριστήριο για να το προσθέσετε σε αυτή την ενέργεια. Κρατήστε το πατημένο για να προσθέσετε παρατεταμένο πάτημα</string>
     <string name="settings_key_now_s">Τώρα: %s</string>
+    <string name="next_tab">Επόμενη καρτέλα</string>
+    <string name="previous_tab">Προηγούμενη καρτέλα</string>
+    <string name="settings_keys_default">Προεπιλογή</string>
+    <string name="settings_keys_max_d">Μια ενέργεια έχει έως %d πλήκτρα: ένα νέο αντικαθιστά το παλαιότερο</string>
+    <string name="settings_key_taken_s_s">Το %1$s έχει οριστεί για «%2$s». Πατήστε το ξανά για να οριστεί εδώ</string>
     <string name="settings_web_cache">Κρυφή μνήμη ιστού</string>
     <string name="settings_web_cache_summary">Οι σελίδες θα φορτωθούν ξανά από το δίκτυο</string>
     <string name="settings_web_cache_cleared">Η κρυφή μνήμη ιστού διαγράφηκε</string>

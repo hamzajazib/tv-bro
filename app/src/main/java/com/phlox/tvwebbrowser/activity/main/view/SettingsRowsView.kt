@@ -23,6 +23,7 @@ import com.phlox.tvwebbrowser.R
 import com.phlox.tvwebbrowser.activity.main.SettingsNavigator.Key
 import com.phlox.tvwebbrowser.activity.main.SettingsNavigator.Row
 import com.phlox.tvwebbrowser.activity.main.SettingsNavigator.Section
+import com.phlox.tvwebbrowser.singleton.shortcuts.toDisplayString
 
 /**
  * The rows of a category of the settings, in their sections. The rows are a form, not a list: there are few
@@ -385,10 +386,10 @@ class SettingsRowsView @JvmOverloads constructor(
 
         override fun bind(row: Row) {
             super.bind(row)
-            val binding = (row as Row.ShortcutKey).binding
-            tvKey.text = binding.toDisplayString(context)
-            //a key that is set looks like a key cap
-            if (binding.isSet) tvKey.setBackgroundResource(R.drawable.ds_settings_key_bg) else tvKey.background = null
+            val bindings = (row as Row.ShortcutKey).bindings
+            tvKey.text = bindings.toDisplayString(context)
+            //keys that are set look like a key cap
+            if (bindings.isNotEmpty()) tvKey.setBackgroundResource(R.drawable.ds_settings_key_bg) else tvKey.background = null
             view.contentDescription = "${row.title}: ${tvKey.text}"
         }
     }

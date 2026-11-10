@@ -574,8 +574,13 @@
     <string name="settings_joystick">Mover el cursor con los joysticks</string>
     <string name="settings_joystick_summary">El joystick izquierdo del mando de juegos mueve el cursor con suavidad. Desactivar si el cursor se mueve solo</string>
     <string name="settings_group_keys">Teclas del mando</string>
-    <string name="settings_press_key">Pulsa una tecla del mando. Mantenla pulsada para asignar una pulsación larga</string>
+    <string name="settings_press_key">Pulsa una tecla del mando para añadirla a esta acción. Mantenla pulsada para añadir una pulsación larga</string>
     <string name="settings_key_now_s">Ahora: %s</string>
+    <string name="next_tab">Pestaña siguiente</string>
+    <string name="previous_tab">Pestaña anterior</string>
+    <string name="settings_keys_default">Predeterminado</string>
+    <string name="settings_keys_max_d">Una acción tiene hasta %d teclas: una nueva sustituye a la más antigua</string>
+    <string name="settings_key_taken_s_s">%1$s está asignada a «%2$s». Púlsela otra vez para asignarla aquí</string>
     <string name="settings_web_cache">Caché web</string>
     <string name="settings_web_cache_summary">Las páginas se vuelven a cargar desde la red</string>
     <string name="settings_web_cache_cleared">Caché web borrada</string>

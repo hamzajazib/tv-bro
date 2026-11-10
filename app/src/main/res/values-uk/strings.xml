@@ -587,8 +587,13 @@
   <string name="settings_joystick">Курсор стіками</string>
   <string name="settings_joystick_summary">Лівий стік геймпада плавно рухає курсор. Вимкніть, якщо курсор сам зсувається</string>
   <string name="settings_group_keys">Клавіші пульта</string>
-  <string name="settings_press_key">Натисніть клавішу на пульті. Утримуйте її, щоб задати довге натискання</string>
+  <string name="settings_press_key">Натисніть клавішу на пульті, щоб додати її до цієї дії. Утримуйте її, щоб додати довге натискання</string>
   <string name="settings_key_now_s">Зараз: %s</string>
+  <string name="next_tab">Наступна вкладка</string>
+  <string name="previous_tab">Попередня вкладка</string>
+  <string name="settings_keys_default">Типово</string>
+  <string name="settings_keys_max_d">Дія має до %d клавіш: нова замінює найстарішу</string>
+  <string name="settings_key_taken_s_s">%1$s призначено на «%2$s». Натисніть її ще раз, щоб призначити сюди</string>
   <string name="settings_web_cache">Вебкеш</string>
   <string name="settings_web_cache_summary">Сторінки знову завантажуватимуться з мережі</string>
   <string name="settings_web_cache_cleared">Вебкеш очищено</string>

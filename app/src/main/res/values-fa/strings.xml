@@ -559,8 +559,13 @@
   <string name="settings_joystick">جابه‌جایی مکان‌نما با اهرم‌ها</string>
   <string name="settings_joystick_summary">اهرم چپ دسته بازی مکان‌نما را نرم جابه‌جا می‌کند. اگر مکان‌نما خودبه‌خود جابه‌جا می‌شود، آن را خاموش کنید</string>
   <string name="settings_group_keys">کلیدهای ریموت</string>
-  <string name="settings_press_key">یک کلید ریموت را فشار دهید. برای فشار طولانی آن را نگه دارید</string>
+  <string name="settings_press_key">یک کلید ریموت را فشار دهید تا به این عمل افزوده شود. برای افزودن فشار طولانی آن را نگه دارید</string>
   <string name="settings_key_now_s">اکنون: %s</string>
+  <string name="next_tab">زبانه بعدی</string>
+  <string name="previous_tab">زبانه قبلی</string>
+  <string name="settings_keys_default">پیش‌فرض</string>
+  <string name="settings_keys_max_d">هر عمل حداکثر %d کلید دارد: کلید جدید جایگزین قدیمی‌ترین می‌شود</string>
+  <string name="settings_key_taken_s_s">%1$s برای «%2$s» تنظیم شده است. برای تنظیم آن در اینجا دوباره فشار دهید</string>
   <string name="settings_web_cache">حافظه پنهان وب</string>
   <string name="settings_web_cache_summary">صفحه‌ها دوباره از شبکه بارگذاری می‌شوند</string>
   <string name="settings_web_cache_cleared">حافظه پنهان وب پاک شد</string>

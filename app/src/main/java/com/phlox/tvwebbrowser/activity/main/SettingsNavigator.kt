@@ -155,7 +155,7 @@ class SettingsNavigator(
         var joystickNavigation: Boolean
         var cursorSpeed: Int
         var cursorAcceleration: Int
-        fun bindingOf(shortcut: Shortcut): KeyBinding
+        fun bindingsOf(shortcut: Shortcut): List<KeyBinding>
 
         suspend fun clearCache()
         var webEngineDebug: Boolean
@@ -287,7 +287,7 @@ class SettingsNavigator(
 
         /** The key of a [shortcut]; the row opens the key capture */
         data class ShortcutKey(
-            val shortcut: Shortcut, override val title: String, val binding: KeyBinding
+            val shortcut: Shortcut, override val title: String, val bindings: List<KeyBinding>
         ) : Row() {
             override val key: Key get() = Key.SHORTCUT
             override val summary: String? get() = null
@@ -1055,7 +1055,7 @@ class SettingsNavigator(
             Row.Toggle(Key.JOYSTICK, string(R.string.settings_joystick), string(R.string.settings_joystick_summary),
                 store.joystickNavigation)
         )
-        val keys = Shortcut.entries.map { Row.ShortcutKey(it, string(it.titleResId), store.bindingOf(it)) }
+        val keys = Shortcut.entries.map { Row.ShortcutKey(it, string(it.titleResId), store.bindingsOf(it)) }
         return listOf(Section(string(R.string.settings_group_cursor), cursor),
             Section(string(R.string.settings_group_keys), keys))
     }

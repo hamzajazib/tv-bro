@@ -574,8 +574,13 @@
     <string name="settings_joystick">Déplacer le curseur avec les joysticks</string>
     <string name="settings_joystick_summary">Le joystick gauche de la manette de jeu déplace le curseur en douceur. Désactivez si le curseur dérive tout seul</string>
     <string name="settings_group_keys">Touches de la télécommande</string>
-    <string name="settings_press_key">Appuyez sur une touche de la télécommande. Maintenez-la pour définir un appui long</string>
+    <string name="settings_press_key">Appuyez sur une touche de la télécommande pour l\'ajouter à cette action. Maintenez-la pour ajouter un appui long</string>
     <string name="settings_key_now_s">Actuellement : %s</string>
+    <string name="next_tab">Onglet suivant</string>
+    <string name="previous_tab">Onglet précédent</string>
+    <string name="settings_keys_default">Par défaut</string>
+    <string name="settings_keys_max_d">Une action a jusqu\'à %d touches : une nouvelle remplace la plus ancienne</string>
+    <string name="settings_key_taken_s_s">%1$s est attribuée à « %2$s ». Appuyez de nouveau pour l\'attribuer ici</string>
     <string name="settings_web_cache">Cache web</string>
     <string name="settings_web_cache_summary">Les pages se rechargent depuis le réseau</string>
     <string name="settings_web_cache_cleared">Cache web vidé</string>

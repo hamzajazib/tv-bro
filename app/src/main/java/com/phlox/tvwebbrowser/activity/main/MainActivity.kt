@@ -415,6 +415,33 @@ open class MainActivity : AppCompatActivity(), BrowserShell.Host {
             shell.onMediaCommand(command) || PictureInPicturePlayback.mediaCommand(command)
 
         override fun findInPage() = shell.showFindInPage()
+
+        /**
+         * The tabs stay while a video is in fullscreen or in the player: the channel keys of a remote are
+         * pressed by habit while watching
+         */
+        private fun tabsLocked() = isFullscreen || shell.takesDpad()
+
+        override fun newTab() {
+            if (tabsLocked()) return
+            openInNewTab(settingsModel.homePage, controller.tabsStates.size)
+        }
+
+        override fun closeTab() {
+            if (tabsLocked()) return
+            val tab = controller.currentTab.value ?: return
+            shell.showPage()
+            controller.closeTab(tab)
+        }
+
+        override fun switchTab(offset: Int) {
+            if (tabsLocked()) return
+            val tabs = controller.tabsStates
+            val index = tabs.indexOf(controller.currentTab.value)
+            if (index == -1 || tabs.size < 2) return
+            shell.showPage()
+            controller.changeTab(tabs[Math.floorMod(index + offset, tabs.size)])
+        }
     }
 
     override fun onDestroy() {
@@ -751,8 +778,9 @@ open class MainActivity : AppCompatActivity(), BrowserShell.Host {
                 if (!keyCodeBackNavigation && shell.dispatchKeyEvent(event)) {
                     return true
                 }
-                if (!keyCodeBackNavigation &&
-                    ShortcutMgr.getInstance(this@MainActivity).handle(event, commands)) {
+                if (!keyCodeBackNavigation && ShortcutMgr.getInstance(this@MainActivity).handle(event, commands,
+                        typing = currentFocus?.onCheckIsTextEditor() == true,
+                        passOn = { localCallback.dispatchKeyEvent(it) })) {
                     return true
                 }
 

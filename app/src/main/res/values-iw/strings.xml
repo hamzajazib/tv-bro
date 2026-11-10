@@ -587,8 +587,13 @@
   <string name="settings_joystick">הזזת הסמן בג׳ויסטיקים</string>
   <string name="settings_joystick_summary">הג׳ויסטיק השמאלי של בקר המשחק מזיז את הסמן בצורה חלקה. יש לכבות אם הסמן זז מעצמו</string>
   <string name="settings_group_keys">מקשי השלט</string>
-  <string name="settings_press_key">לחץ על מקש בשלט. החזק אותו כדי להגדיר לחיצה ארוכה</string>
+  <string name="settings_press_key">לחץ על מקש בשלט כדי להוסיף אותו לפעולה זו. החזק אותו כדי להוסיף לחיצה ארוכה</string>
   <string name="settings_key_now_s">עכשיו: %s</string>
+  <string name="next_tab">הכרטיסייה הבאה</string>
+  <string name="previous_tab">הכרטיסייה הקודמת</string>
+  <string name="settings_keys_default">ברירת מחדל</string>
+  <string name="settings_keys_max_d">לפעולה יש עד %d מקשים: מקש חדש מחליף את הישן ביותר</string>
+  <string name="settings_key_taken_s_s">%1$s מוגדר עבור „%2$s”. לחצו עליו שוב כדי להגדיר אותו כאן</string>
   <string name="settings_web_cache">מטמון אינטרנט</string>
   <string name="settings_web_cache_summary">דפים ייטענו שוב מהרשת</string>
   <string name="settings_web_cache_cleared">מטמון האינטרנט נוקה</string>

@@ -558,8 +558,13 @@
   <string name="settings_joystick">Cursor mit den Sticks bewegen</string>
   <string name="settings_joystick_summary">Der linke Stick eines Gamecontrollers bewegt den Cursor stufenlos. Ausschalten, wenn der Cursor von selbst wandert</string>
   <string name="settings_group_keys">Tasten der Fernbedienung</string>
-  <string name="settings_press_key">Drücken Sie eine Taste auf der Fernbedienung. Halten Sie sie gedrückt, um langes Drücken festzulegen</string>
+  <string name="settings_press_key">Drücken Sie eine Taste auf der Fernbedienung, um sie dieser Aktion hinzuzufügen. Halten Sie sie gedrückt, um ein langes Drücken hinzuzufügen</string>
   <string name="settings_key_now_s">Aktuell: %s</string>
+  <string name="next_tab">Nächster Tab</string>
+  <string name="previous_tab">Vorheriger Tab</string>
+  <string name="settings_keys_default">Standard</string>
+  <string name="settings_keys_max_d">Eine Aktion hat bis zu %d Tasten: eine neue ersetzt die älteste</string>
+  <string name="settings_key_taken_s_s">%1$s ist für „%2$s“ festgelegt. Drücken Sie sie erneut, um sie stattdessen hier festzulegen</string>
   <string name="settings_web_cache">Web-Cache</string>
   <string name="settings_web_cache_summary">Seiten werden wieder aus dem Netzwerk geladen</string>
   <string name="settings_web_cache_cleared">Web-Cache geleert</string>

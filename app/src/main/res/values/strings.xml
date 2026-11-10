@@ -632,9 +632,14 @@
     <string name="settings_joystick">Move the cursor with sticks</string>
     <string name="settings_joystick_summary">The left stick of a game controller moves the cursor smoothly. Turn off if the cursor drifts on its own</string>
     <string name="settings_group_keys">Keys of the remote</string>
-    <string name="settings_press_key">Press a key on the remote. Hold it to set a long press</string>
+    <string name="settings_press_key">Press a key on the remote to add it to this action. Hold it to add a long press</string>
     <!-- %s: the key of the shortcut now -->
     <string name="settings_key_now_s">Now: %s</string>
+    <string name="next_tab">Next tab</string>
+    <string name="previous_tab">Previous tab</string>
+    <string name="settings_keys_default">Default</string>
+    <string name="settings_keys_max_d">An action has up to %d keys: a new one replaces the oldest</string>
+    <string name="settings_key_taken_s_s">%1$s is set for “%2$s”. Press it again to set it here instead</string>
     <!-- Advanced -->
     <string name="settings_web_cache">Web cache</string>
     <string name="settings_web_cache_summary">Pages load again from the network</string>
