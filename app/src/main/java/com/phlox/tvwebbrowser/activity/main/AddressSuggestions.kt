@@ -195,7 +195,7 @@ class AddressSuggestions(
         const val MAX_ROWS = 6
         /** The rows each kind (pages, searches) has when both have more */
         const val SHARE = 3
-        const val SEARCH_DELAY_MS = 200L
+        const val SEARCH_DELAY_MS = 300L
         private const val DAY = 24 * 60 * 60 * 1000L
         private val SCHEMES = listOf("http://", "https://")
 

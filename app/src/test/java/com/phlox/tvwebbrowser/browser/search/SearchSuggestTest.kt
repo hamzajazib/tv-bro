@@ -91,7 +91,16 @@ class SearchSuggestTest {
         } catch (e: IOException) {
             true
         }
-        assertTrue(fails(client("[]".toByteArray(), code = 429)))
+        assertTrue(fails(client("[]".toByteArray(), code = 500)))
+        //a refusal is told apart: the engine is left alone after it
+        for (code in listOf(429, 403)) {
+            try {
+                client("[]".toByteArray(), code = code).fetch("https://e.com/?q=[query]", "a")
+                org.junit.Assert.fail()
+            } catch (e: SearchSuggestRefusedException) {
+                assertEquals(code, e.code)
+            }
+        }
         assertTrue(fails(client(ByteArray(SearchSuggestClient.MAX_BODY_BYTES + 1) { ' '.code.toByte() })))
         //only web addresses with the query are asked
         opened = null
@@ -102,14 +111,99 @@ class SearchSuggestTest {
 
     @Test
     fun searchesAreAskedAndAddressesAreNot() {
-        for (text in listOf("weather", "weather kyiv", " yout", "что такое dns", "python: lambda", "a/b c", "c++")) {
+        for (text in listOf("weather", "weather kyiv", " yout", "что такое dns", "python: lambda", "a/b c", "c++", "we", "猫")) {
             assertTrue(text, SearchSuggestRules.shouldAsk(text))
         }
-        for (text in listOf("", "   ", "https://example.com", "http://", "see https://example.com/a b", "example.com",
+        for (text in listOf("", "   ", "w", " w ", "я", "https://example.com", "http://", "see https://example.com/a b", "example.com",
             "example.", "www.example.com/path", "192.168.1.1", "router/admin", "localhost", "LOCALHOST", "host:8080",
             "about:config", "x".repeat(SearchSuggestRules.MAX_LENGTH + 1))) {
             assertFalse(text, SearchSuggestRules.shouldAsk(text))
         }
+    }
+
+    @Test
+    fun anEngineThatRefusesOrKeepsFailingIsLeftAlone() {
+        var now = 1_000_000L
+        val limiter = SearchSuggestLimiter { now }
+        assertTrue(limiter.tryRequest("a.com"))
+        limiter.onError("a.com")
+        assertFalse(limiter.isPaused("a.com"))
+        //an answer between the failures starts the count again
+        limiter.onAnswer("a.com")
+        limiter.onError("a.com")
+        assertFalse(limiter.isPaused("a.com"))
+        limiter.onError("a.com")
+        assertTrue(limiter.isPaused("a.com"))
+        assertFalse(limiter.tryRequest("a.com"))
+        //the other engines are asked
+        assertTrue(limiter.tryRequest("b.com"))
+        limiter.onRefused("b.com")
+        assertTrue(limiter.isPaused("b.com"))
+        now += SearchSuggestLimiter.PAUSE_MS - 1
+        assertTrue(limiter.isPaused("a.com"))
+        now += 1
+        assertFalse(limiter.isPaused("a.com"))
+        assertTrue(limiter.tryRequest("a.com"))
+        //one more failure does not pause it at once
+        limiter.onError("a.com")
+        assertFalse(limiter.isPaused("a.com"))
+    }
+
+    @Test
+    fun theRequestsOfAMinuteAreLimited() {
+        var now = 1_000_000L
+        val limiter = SearchSuggestLimiter { now }
+        repeat(SearchSuggestLimiter.MAX_PER_MINUTE) {
+            assertTrue(limiter.tryRequest(if (it % 2 == 0) "a.com" else "b.com"))
+            now += 1000
+        }
+        assertFalse(limiter.tryRequest("a.com"))
+        assertFalse(limiter.tryRequest("c.com"))
+        //no pause: the first request of the minute is 60 s old now
+        assertFalse(limiter.isPaused("a.com"))
+        now += 60_000 - SearchSuggestLimiter.MAX_PER_MINUTE * 1000
+        assertTrue(limiter.tryRequest("a.com"))
+        assertFalse(limiter.tryRequest("a.com"))
+    }
+
+    @Test
+    fun theSourceOfTheAddressFieldFollowsTheSettingsAndTheLimits() = kotlinx.coroutines.runBlocking {
+        val config = com.phlox.tvwebbrowser.AppContext.provideConfig()
+        config.searchEngineURL.value = Config.SearchEnginesURLs[0]
+        var code = 200
+        var requests = 0
+        val client = SearchSuggestClient(open = { url ->
+            requests++
+            FakeConnection(url, code, """["we",["weather"]]""".toByteArray(), "application/json")
+        })
+        val limiter = SearchSuggestLimiter()
+        val source = SearchEngineSuggestions(config, client, kotlin.coroutines.EmptyCoroutineContext, limiter)
+        assertTrue(source.asks("we"))
+        assertFalse(source.asks("w"))
+        assertFalse(source.asks("example.com"))
+        assertEquals(listOf("weather"), source.suggest("we"))
+
+        config.searchSuggestions = false
+        assertFalse(source.asks("we"))
+        assertNull(source.suggest("we"))
+        config.searchSuggestions = true
+        config.incognitoMode = true
+        assertFalse(source.asks("we"))
+        assertNull(source.suggest("we"))
+        config.incognitoMode = false
+        assertEquals(1, requests)
+
+        //refused: the engine is not asked again, another one is
+        code = 429
+        assertNull(source.suggest("we"))
+        assertEquals(2, requests)
+        assertFalse(source.asks("we"))
+        assertNull(source.suggest("we"))
+        assertEquals(2, requests)
+        code = 200
+        config.searchEngineURL.value = Config.SearchEnginesURLs[1]
+        assertTrue(source.asks("we"))
+        assertEquals(listOf("weather"), source.suggest("we"))
     }
 
     @Test

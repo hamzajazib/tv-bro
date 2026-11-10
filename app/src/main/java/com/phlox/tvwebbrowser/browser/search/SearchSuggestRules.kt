@@ -6,12 +6,15 @@ package com.phlox.tvwebbrowser.browser.search
  */
 object SearchSuggestRules {
     const val MAX_LENGTH = 100
+    /** Shorter texts are not asked about, unless they are a word by themselves (an ideograph) */
+    const val MIN_LENGTH = 2
     /** A letter or a digit before a dot: a host (example.com, 192.168.1.1), also while it is typed (example.) */
     private val HOST_DOT = Regex("[\\p{L}\\p{N}]\\.")
 
     fun shouldAsk(text: String): Boolean {
         val query = text.trim()
         if (query.isEmpty() || query.length > MAX_LENGTH) return false
+        if (query.length < MIN_LENGTH && !Character.isIdeographic(query.codePointAt(0))) return false
         if (query.contains("://")) return false
         //words are a search
         if (query.any { it.isWhitespace() }) return true

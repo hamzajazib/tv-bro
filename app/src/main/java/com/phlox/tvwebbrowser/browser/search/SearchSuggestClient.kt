@@ -24,6 +24,7 @@ class SearchSuggestClient(
 ) {
     /**
      * The suggestions of the engine at [template] (with [SearchEngines.QUERY]) for the [query]; blocks
+     * @throws SearchSuggestRefusedException when the engine refuses the request (429, 403)
      * @throws IOException when the engine can not be reached or does not answer with 200
      */
     fun fetch(template: String, query: String): List<String> {
@@ -38,7 +39,9 @@ class SearchSuggestClient(
             connection.setRequestProperty("Accept", "application/x-suggestions+json,application/json,*/*;q=0.8")
             connection.setRequestProperty("Accept-Language", language())
             if (connection is HttpURLConnection && connection.responseCode != HttpURLConnection.HTTP_OK) {
-                throw IOException("HTTP ${connection.responseCode}")
+                val code = connection.responseCode
+                if (code == 429 || code == HttpURLConnection.HTTP_FORBIDDEN) throw SearchSuggestRefusedException(code)
+                throw IOException("HTTP $code")
             }
             val body = connection.getInputStream().use { readLimited(it) }
             return SearchSuggestParser.parse(String(body, charsetOf(connection.contentType)))
@@ -76,6 +79,9 @@ class SearchSuggestClient(
         }
     }
 }
+
+/** The engine refused to suggest: too many requests (429), or not allowed (403) */
+class SearchSuggestRefusedException(val code: Int) : IOException("HTTP $code")
 
 /** Reads OpenSearch suggestions: `["text", ["suggestion", …], …]` */
 object SearchSuggestParser {
