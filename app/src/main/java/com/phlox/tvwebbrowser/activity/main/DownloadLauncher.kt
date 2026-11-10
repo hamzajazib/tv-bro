@@ -71,15 +71,19 @@ class DownloadLauncher(
 
     fun download(request: DownloadRequest) {
         val download = request.toDownload()
-        val folder = folder()
+        val (folder, unavailable) = chooseFolder()
+        //the toast of the started download would replace the warning at once: the warning shows in its place
+        val begin = { start(download, folder, folderUnavailable = unavailable) }
         val neededPermission = missingPermission(folder)
         if (neededPermission == null) {
-            start(download, folder)
+            begin()
             return
         }
         activity.launchForResult(ActivityResultContracts.RequestPermission(), neededPermission) { granted ->
             if (granted) {
-                start(download, folder)
+                begin()
+            } else if (unavailable) {
+                onFolderUnavailable()
             }
         }
     }
@@ -98,7 +102,9 @@ class DownloadLauncher(
     suspend fun receive(request: DownloadRequest): Incoming? {
         val download = request.toDownload()
         download.resumable = false
-        val folder = folder()
+        val (folder, unavailable) = chooseFolder()
+        //no toast tells this download started
+        if (unavailable) onFolderUnavailable()
         val missing = missingPermission(folder)
         if (missing != null) activity.launchForResult(ActivityResultContracts.RequestPermission(), missing) {}
         if (missing == Manifest.permission.WRITE_EXTERNAL_STORAGE) return null
@@ -113,8 +119,11 @@ class DownloadLauncher(
         return Incoming(download, writeEnd)
     }
 
-    /** The folder the user chose while the app may write there, else null (Downloads) */
-    private fun folder(): Uri? {
+    /**
+     * The folder the user chose while the app may write there, else null (Downloads), and whether the user
+     * chose a folder that can not be used now
+     */
+    private fun chooseFolder(): Pair<Uri?, Boolean> {
         val config = AppContext.provideConfig()
         val chosen = DownloadFolder.chosen(config)
         val folder = chosen?.let { tree ->
@@ -129,8 +138,7 @@ class DownloadLauncher(
                 else -> tree
             }
         }
-        if (chosen != null && folder == null) onFolderUnavailable()
-        return folder
+        return folder to (chosen != null && folder == null)
     }
 
     /** A permission a download into the [folder] needs and the app does not have */
@@ -180,7 +188,7 @@ class DownloadLauncher(
      * @param onSent whether the command went to the service
      */
     private fun start(download: Download, folder: Uri?, stream: ParcelFileDescriptor? = null, notify: Boolean = true,
-                      onSent: (Boolean) -> Unit = {}) {
+                      folderUnavailable: Boolean = false, onSent: (Boolean) -> Unit = {}) {
         //a page, not about:blank or the like
         val referer = download.referer?.takeIf { it.startsWith("http://") || it.startsWith("https://") }
         //incognito downloads do not keep the page they came from
@@ -208,7 +216,7 @@ class DownloadLauncher(
                     }
                     service.send(message)
                     sent = true
-                    if (notify) onDownloadStarted(download)
+                    if (folderUnavailable) onFolderUnavailable() else if (notify) onDownloadStarted(download)
                 } finally {
                     service.release()
                     onSent(sent)
