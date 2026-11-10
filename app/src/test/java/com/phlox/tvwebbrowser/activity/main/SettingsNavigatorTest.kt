@@ -115,6 +115,7 @@ class SettingsNavigatorTest {
         var cacheCleared = false
         override suspend fun clearCache() { cacheCleared = true }
         override var webEngineDebug = false
+        override var historyRetention = Config.HistoryRetention.YEAR
         override var downloadFolderPickerAvailable = true
         override var downloadFolderName: String? = null
         override fun resetDownloadFolder() { downloadFolderName = null }
@@ -551,6 +552,19 @@ class SettingsNavigatorTest {
         assertEquals(ProxySettings.Type.SOCKS5, store.proxyType)
         assertFalse(Key.PROXY_USERNAME in keys())
         assertFalse(Key.PROXY_PASSWORD in keys())
+    }
+
+    @Test
+    fun theTimeHistoryIsKeptIsChosenInAdvanced() {
+        val navigator = navigator(tvUi = false)
+        navigator.show(Category.ADVANCED)
+        val row = row<Row.Choice>(Key.HISTORY_RETENTION)
+        assertEquals(Config.HistoryRetention.entries.size, row.options.size)
+        assertEquals(Config.HistoryRetention.YEAR.ordinal, row.selected)
+
+        navigator.choose(Key.HISTORY_RETENTION, Config.HistoryRetention.MONTH.ordinal)
+        assertEquals(Config.HistoryRetention.MONTH, store.historyRetention)
+        assertEquals(Config.HistoryRetention.MONTH.ordinal, row<Row.Choice>(Key.HISTORY_RETENTION).selected)
     }
 
     @Test

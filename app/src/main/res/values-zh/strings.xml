@@ -552,6 +552,15 @@
   <string name="settings_web_cache_cleared">网页缓存已清除</string>
   <string name="settings_engine_debug">Web 引擎调试</string>
   <string name="settings_engine_debug_summary">连接进行调试的电脑可以看到页面和 Cookie</string>
+  <string name="settings_history_retention">保留历史记录</string>
+  <string name="settings_history_retention_summary">更早的访问记录会被删除</string>
+  <array name="history_retention">
+    <item>1 周</item>
+    <item>1 个月</item>
+    <item>3 个月</item>
+    <item>6 个月</item>
+    <item>1 年</item>
+  </array>
   <string name="settings_group_downloads">下载</string>
   <string name="settings_download_folder">下载文件夹</string>
   <string name="settings_download_folder_summary">新下载内容的保存位置</string>

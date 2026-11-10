@@ -50,7 +50,7 @@ class SettingsNavigator(
         SITE_VIEW, USER_AGENT, USER_AGENT_STRING, AUTOPLAY, AD_BLOCK, TRACKING_PROTECTION, FILTER_LIST, REGIONAL_LIST, CUSTOM_LIST, UPDATE_LISTS, VIDEO_PLAYER, VIDEO_HINT,
         INTERFACE, THEME, DARKENING, KEEP_SCREEN_ON, MATCH_FRAME_RATE,
         CURSOR_SPEED, CURSOR_ACCELERATION, JOYSTICK, SHORTCUT,
-        CLEAR_CACHE, ENGINE_DEBUG, DOWNLOAD_FOLDER, PROXY, PROXY_TYPE, PROXY_HOST, PROXY_PORT, PROXY_USERNAME, PROXY_PASSWORD,
+        CLEAR_CACHE, ENGINE_DEBUG, HISTORY_RETENTION, DOWNLOAD_FOLDER, PROXY, PROXY_TYPE, PROXY_HOST, PROXY_PORT, PROXY_USERNAME, PROXY_PASSWORD,
         INFO, UPDATE, AUTO_UPDATE, UPDATE_CHANNEL,
         LINK_SOURCE, LINK_SUPPORT, LINK_ICON, LINK_LICENSE, LINK_PRIVACY, NOTICE
     }
@@ -159,6 +159,8 @@ class SettingsNavigator(
 
         suspend fun clearCache()
         var webEngineDebug: Boolean
+        /** Visits older than this are deleted from the history; the setter deletes them at once */
+        var historyRetention: Config.HistoryRetention
         /** The device has a picker of folders (the Storage Access Framework); many TVs have none */
         val downloadFolderPickerAvailable: Boolean
         /** The folder the user chose for downloads as it is shown, null for the Downloads directory */
@@ -507,6 +509,7 @@ class SettingsNavigator(
             }
             Key.INTERFACE -> store.interfaceMode = Config.InterfaceMode.entries[index]
             Key.THEME -> store.theme = Config.Theme.entries[index]
+            Key.HISTORY_RETENTION -> store.historyRetention = Config.HistoryRetention.entries[index]
             Key.PROXY_TYPE -> {
                 val type = ProxySettings.Type.entries.getOrNull(index) ?: return
                 if (type == store.proxyType) return
@@ -1064,6 +1067,10 @@ class SettingsNavigator(
             Row.Toggle(Key.ENGINE_DEBUG, string(R.string.settings_engine_debug), string(R.string.settings_engine_debug_summary),
                 store.webEngineDebug, restart = true)
         )))
+        sections += Section(string(R.string.history), listOf(Row.Choice(Key.HISTORY_RETENTION,
+            string(R.string.settings_history_retention), string(R.string.settings_history_retention_summary),
+            context.resources.getStringArray(R.array.history_retention).toList(), store.historyRetention.ordinal,
+            segmented = false)))
         //the row stays while a folder is chosen, so that it can be reset
         if (store.downloadFolderPickerAvailable || store.downloadFolderName != null) {
             val options = downloadFolderOptions()

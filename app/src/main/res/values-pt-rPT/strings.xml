@@ -581,6 +581,15 @@
     <string name="settings_web_cache_cleared">Cache web limpa</string>
     <string name="settings_engine_debug">Depuração do motor web</string>
     <string name="settings_engine_debug_summary">Um computador ligado para depuração pode ver páginas e cookies</string>
+    <string name="settings_history_retention">Manter o histórico</string>
+    <string name="settings_history_retention_summary">As visitas mais antigas são eliminadas</string>
+    <array name="history_retention">
+        <item>1 semana</item>
+        <item>1 mês</item>
+        <item>3 meses</item>
+        <item>6 meses</item>
+        <item>1 ano</item>
+    </array>
     <string name="settings_group_downloads">Transferências</string>
     <string name="settings_download_folder">Pasta de transferências</string>
     <string name="settings_download_folder_summary">Onde são guardadas as novas transferências</string>

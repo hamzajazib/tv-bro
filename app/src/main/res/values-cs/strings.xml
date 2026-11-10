@@ -595,6 +595,15 @@
     <string name="settings_web_cache_cleared">Webová mezipaměť vymazána</string>
     <string name="settings_engine_debug">Ladění webového jádra</string>
     <string name="settings_engine_debug_summary">Počítač připojený k ladění může vidět stránky a soubory cookie</string>
+    <string name="settings_history_retention">Uchovávat historii</string>
+    <string name="settings_history_retention_summary">Starší návštěvy se mažou</string>
+    <array name="history_retention">
+        <item>1 týden</item>
+        <item>1 měsíc</item>
+        <item>3 měsíce</item>
+        <item>6 měsíců</item>
+        <item>1 rok</item>
+    </array>
     <string name="settings_group_downloads">Stahování</string>
     <string name="settings_download_folder">Složka pro stahování</string>
     <string name="settings_download_folder_summary">Kam se ukládají nová stahování</string>

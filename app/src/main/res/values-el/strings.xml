@@ -567,6 +567,15 @@
     <string name="settings_web_cache_cleared">Η κρυφή μνήμη ιστού διαγράφηκε</string>
     <string name="settings_engine_debug">Εντοπισμός σφαλμάτων μηχανής ιστού</string>
     <string name="settings_engine_debug_summary">Ένας υπολογιστής συνδεδεμένος για εντοπισμό σφαλμάτων μπορεί να δει σελίδες και cookies</string>
+    <string name="settings_history_retention">Διατήρηση ιστορικού</string>
+    <string name="settings_history_retention_summary">Οι παλαιότερες επισκέψεις διαγράφονται</string>
+    <array name="history_retention">
+        <item>1 εβδομάδα</item>
+        <item>1 μήνας</item>
+        <item>3 μήνες</item>
+        <item>6 μήνες</item>
+        <item>1 έτος</item>
+    </array>
     <string name="settings_group_downloads">Λήψεις</string>
     <string name="settings_download_folder">Φάκελος λήψεων</string>
     <string name="settings_download_folder_summary">Πού αποθηκεύονται οι νέες λήψεις</string>

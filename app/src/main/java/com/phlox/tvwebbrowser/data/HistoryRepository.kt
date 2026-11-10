@@ -1,11 +1,11 @@
 package com.phlox.tvwebbrowser.data
 
+import com.phlox.tvwebbrowser.Config
 import com.phlox.tvwebbrowser.activity.main.AddressSuggestions
 import com.phlox.tvwebbrowser.activity.main.HistoryNavigator
 import com.phlox.tvwebbrowser.browser.VisitedHistoryLogger
 import com.phlox.tvwebbrowser.model.HistoryItem
 import com.phlox.tvwebbrowser.model.dao.HistoryDao
-import java.util.Calendar
 
 /**
  * The browsing history.
@@ -13,18 +13,14 @@ import java.util.Calendar
 class HistoryRepository(private val dao: HistoryDao) : VisitedHistoryLogger.Store, HistoryNavigator.Store,
     AddressSuggestions.Store {
     companion object {
-        private const val MAX_ITEMS = 5000
-        private const val KEPT_MONTHS_WHEN_TRIMMED = 3
+        private const val DAY = 24 * 60 * 60 * 1000L
     }
 
     /**
-     * Deletes the items older than a few months when there are too many of them.
+     * Deletes the visits older than the [retention] (Settings, Advanced). Nothing else limits the history.
      */
-    suspend fun trim() {
-        if (dao.count() <= MAX_ITEMS) return
-        val c = Calendar.getInstance()
-        c.add(Calendar.MONTH, -KEPT_MONTHS_WHEN_TRIMMED)
-        dao.deleteWhereTimeLessThan(c.time.time)
+    suspend fun trim(retention: Config.HistoryRetention, now: Long = System.currentTimeMillis()) {
+        dao.deleteWhereTimeLessThan(now - retention.days * DAY)
     }
 
     suspend fun last(limit: Int): List<HistoryItem> = dao.last(limit)
@@ -32,8 +28,8 @@ class HistoryRepository(private val dao: HistoryDao) : VisitedHistoryLogger.Stor
     suspend fun mostVisited(): List<HistoryItem> = dao.frequentlyUsedUrls()
 
     /**
-     * The whole history, the latest items first. [trim] keeps it small enough to be searched in memory
-     * (SQLite's LIKE folds the case of ASCII letters only).
+     * The whole history, the latest items first: it is searched in memory (SQLite's LIKE folds the case
+     * of ASCII letters only), and [trim] keeps at most a year of it.
      */
     override suspend fun all(): List<HistoryItem> = dao.allByTime()
 
