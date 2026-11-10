@@ -22,6 +22,8 @@ import com.phlox.tvwebbrowser.channels.HomeChannels
 import com.phlox.tvwebbrowser.data.FavoritesRepository
 import com.phlox.tvwebbrowser.browser.adblock.AdBlockService
 import com.phlox.tvwebbrowser.browser.adblock.FilterListCatalog
+import com.phlox.tvwebbrowser.browser.search.OpenSearchDetector
+import com.phlox.tvwebbrowser.browser.search.SearchEngines
 import com.phlox.tvwebbrowser.net.ProxySettings
 import com.phlox.tvwebbrowser.singleton.shortcuts.KeyBinding
 import com.phlox.tvwebbrowser.singleton.shortcuts.Shortcut
@@ -37,6 +39,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * The settings of the app for the settings screens: [Config], the [SettingsModel] and the models of ad
@@ -73,6 +76,26 @@ class AppSettingsStore(
     override var searchEngineUrl: String
         get() = config.searchEngineURL.value
         set(value) = settingsModel.setSearchEngineURL(value)
+    override var searchSuggestions: Boolean
+        get() = config.searchSuggestions
+        set(value) {
+            config.searchSuggestions = value
+        }
+    override var searchSuggestUrl: String
+        get() = config.customSearchSuggestUrl
+        set(value) {
+            config.customSearchSuggestUrl = value
+        }
+
+    /** From the OpenSearch description of the site, else the suggestions of the engine of the list it is a site of */
+    override suspend fun detectSearchSuggestUrl(searchUrl: String): String? = withContext(Dispatchers.IO) {
+        val told = try {
+            OpenSearchDetector().detect(searchUrl)
+        } catch (e: Exception) {
+            null
+        }
+        told ?: SearchEngines.suggestUrlOf(searchUrl, "")
+    }
     override val homePageMode: Config.HomePageMode get() = settingsModel.homePageMode
     override val homePageUrl: String get() = settingsModel.homePage
     override val homePageLinksMode: Config.HomePageLinksMode get() = settingsModel.homePageLinksMode

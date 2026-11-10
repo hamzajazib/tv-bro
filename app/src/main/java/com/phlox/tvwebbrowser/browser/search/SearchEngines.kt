@@ -1,7 +1,6 @@
 package com.phlox.tvwebbrowser.browser.search
 
 import com.phlox.tvwebbrowser.Config
-import java.net.URI
 
 /** What the app knows about the search engines of [Config]: where they suggest searches */
 object SearchEngines {
@@ -37,10 +36,5 @@ object SearchEngines {
     }
 
     /** The host of the [url] in lower case, null when it has none */
-    fun hostOf(url: String): String? = try {
-        //the placeholder is not a legal part of a URI
-        URI(url.replace(QUERY, "q").trim()).host?.lowercase()?.ifEmpty { null }
-    } catch (e: Exception) {
-        null
-    }
+    fun hostOf(url: String): String? = Config.searchEngineHost(url)
 }
