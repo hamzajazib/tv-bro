@@ -594,6 +594,15 @@
   <string name="settings_web_cache_cleared">מטמון האינטרנט נוקה</string>
   <string name="settings_engine_debug">ניפוי שגיאות במנוע האינטרנט</string>
   <string name="settings_engine_debug_summary">מחשב שמחובר לניפוי שגיאות יכול לראות דפים וקובצי Cookie</string>
+  <string name="settings_history_retention">שמירת היסטוריה</string>
+  <string name="settings_history_retention_summary">ביקורים ישנים יותר נמחקים</string>
+  <array name="history_retention">
+    <item>שבוע</item>
+    <item>חודש</item>
+    <item>3 חודשים</item>
+    <item>6 חודשים</item>
+    <item>שנה</item>
+  </array>
   <string name="settings_group_downloads">הורדות</string>
   <string name="settings_download_folder">תיקיית ההורדות</string>
   <string name="settings_download_folder_summary">איפה נשמרות הורדות חדשות</string>

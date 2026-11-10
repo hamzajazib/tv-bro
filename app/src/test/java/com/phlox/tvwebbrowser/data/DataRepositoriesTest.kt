@@ -1,6 +1,7 @@
 package com.phlox.tvwebbrowser.data
 
 import androidx.room.Room
+import com.phlox.tvwebbrowser.Config
 import com.phlox.tvwebbrowser.model.FavoriteItem
 import com.phlox.tvwebbrowser.model.HistoryItem
 import com.phlox.tvwebbrowser.model.TabEntity
@@ -13,7 +14,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
-import java.util.Calendar
 
 @RunWith(RobolectricTestRunner::class)
 class DataRepositoriesTest {
@@ -55,17 +55,23 @@ class DataRepositoriesTest {
     }
 
     @Test
-    fun historyIsTrimmedOnlyWhenTooLong() = runBlocking {
-        val old = Calendar.getInstance().apply { add(Calendar.YEAR, -1) }.timeInMillis
-        fun item(time: Long) = HistoryItem().apply { url = "https://a.com/"; title = ""; this.time = time }
-        data.history.insert(item(old))
-        data.history.trim()
-        assertEquals(1, data.history.last(10).size)
+    fun historyKeepsTheVisitsOfTheChosenTime() = runBlocking {
+        val day = 24 * 60 * 60 * 1000L
+        val now = 1_000 * day
+        for (daysAgo in listOf(0, 6, 8, 100, 364, 366, 800)) {
+            data.history.insert(HistoryItem().apply { url = "https://a.com/$daysAgo"; title = ""; time = now - daysAgo * day })
+        }
+        suspend fun kept() = data.history.all().map { it.url.substringAfterLast('/').toInt() }
 
-        repeat(5000) { data.history.insert(item(System.currentTimeMillis())) }
-        data.history.trim()
-        //the old item went, the recent ones stay
-        assertEquals(5000, db.historyDao().count())
-        assertEquals(0, data.history.all().count { it.time == old })
+        //however few they are, the visits older than the time go
+        data.history.trim(Config.HistoryRetention.YEAR, now)
+        assertEquals(listOf(0, 6, 8, 100, 364), kept())
+        data.history.trim(Config.HistoryRetention.THREE_MONTHS, now)
+        assertEquals(listOf(0, 6, 8), kept())
+        data.history.trim(Config.HistoryRetention.WEEK, now)
+        assertEquals(listOf(0, 6), kept())
+        //a longer time brings nothing back and deletes nothing
+        data.history.trim(Config.HistoryRetention.YEAR, now)
+        assertEquals(listOf(0, 6), kept())
     }
 }

@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -53,6 +54,7 @@ class BrowserController : ActiveModel() {
         var TAG: String = BrowserController::class.java.simpleName
         /** The engine file loads in tens of milliseconds; a slow storage must not keep the tabs waiting */
         private const val AD_BLOCK_LOAD_TIMEOUT_MS = 1000L
+        private const val HISTORY_TRIM_INTERVAL_MS = 24 * 60 * 60 * 1000L
         /** The url of a tab that shows no page */
         const val BLANK_URL = "about:blank"
     }
@@ -100,6 +102,8 @@ class BrowserController : ActiveModel() {
     val homePageLinks = HomePageLinks(config, data.history, data.favorites)
     private val historyLogger = VisitedHistoryLogger(modelScope, data.history)
     private var historyLoaded = false
+    /** When the old visits were deleted last ([SystemClock.elapsedRealtime]) */
+    private var historyTrimmedAt = 0L
 
     init {
         currentTab.subscribe({ publishState() }, false)
@@ -147,9 +151,18 @@ class BrowserController : ActiveModel() {
         loaded = true
     }
 
+    /** The process of a TV may live for weeks: the old visits go at start and then once a day */
+    private fun trimHistoryDaily() {
+        val now = SystemClock.elapsedRealtime()
+        if (now - historyTrimmedAt < HISTORY_TRIM_INTERVAL_MS) return
+        historyTrimmedAt = now
+        modelScope.launch { data.history.trim(config.historyRetention) }
+    }
+
     private suspend fun initHistory() {
         Log.d(TAG, "initHistory")
-        data.history.trim()
+        historyTrimmedAt = SystemClock.elapsedRealtime()
+        data.history.trim(config.historyRetention)
         try {
             //its title changes when the page shown again gets one
             historyLogger.lastHistoryItem = data.history.last(1).firstOrNull()?.also { it.saved = true }
@@ -923,6 +936,7 @@ class BrowserController : ActiveModel() {
 
         override fun onVisited(url: String) {
             if (!config.incognitoMode) {
+                trimHistoryDaily()
                 //the title of the tab may still be the one of the previous page
                 historyLogger.logVisited(url) {
                     //asked later: the tab may be closed by then (its engine released)

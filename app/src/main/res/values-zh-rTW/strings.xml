@@ -552,6 +552,15 @@
     <string name="settings_web_cache_cleared">已清除網頁快取</string>
     <string name="settings_engine_debug">Web 引擎偵錯</string>
     <string name="settings_engine_debug_summary">連接進行偵錯的電腦可以看到頁面和 Cookie</string>
+    <string name="settings_history_retention">保留歷史記錄</string>
+    <string name="settings_history_retention_summary">較舊的造訪記錄會被刪除</string>
+    <array name="history_retention">
+        <item>1 週</item>
+        <item>1 個月</item>
+        <item>3 個月</item>
+        <item>6 個月</item>
+        <item>1 年</item>
+    </array>
     <string name="settings_group_downloads">下載</string>
     <string name="settings_download_folder">下載資料夾</string>
     <string name="settings_download_folder_summary">新下載內容的儲存位置</string>

@@ -594,6 +594,15 @@
   <string name="settings_web_cache_cleared">Вебкеш очищено</string>
   <string name="settings_engine_debug">Налагодження вебрушія</string>
   <string name="settings_engine_debug_summary">Комп\'ютер, підключений для налагодження, може бачити сторінки й cookie</string>
+  <string name="settings_history_retention">Зберігати історію</string>
+  <string name="settings_history_retention_summary">Старіші відвідування видаляються</string>
+  <array name="history_retention">
+    <item>1 тиждень</item>
+    <item>1 місяць</item>
+    <item>3 місяці</item>
+    <item>6 місяців</item>
+    <item>1 рік</item>
+  </array>
   <string name="settings_group_downloads">Завантаження</string>
   <string name="settings_download_folder">Папка завантажень</string>
   <string name="settings_download_folder_summary">Куди зберігаються нові завантаження</string>

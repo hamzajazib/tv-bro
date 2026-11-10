@@ -566,6 +566,15 @@
   <string name="settings_web_cache_cleared">حافظه پنهان وب پاک شد</string>
   <string name="settings_engine_debug">اشکال‌زدایی موتور وب</string>
   <string name="settings_engine_debug_summary">رایانه‌ای که برای اشکال‌زدایی وصل است می‌تواند صفحه‌ها و کوکی‌ها را ببیند</string>
+  <string name="settings_history_retention">نگه‌داشتن تاریخچه</string>
+  <string name="settings_history_retention_summary">بازدیدهای قدیمی‌تر حذف می‌شوند</string>
+  <array name="history_retention">
+    <item>۱ هفته</item>
+    <item>۱ ماه</item>
+    <item>۳ ماه</item>
+    <item>۶ ماه</item>
+    <item>۱ سال</item>
+  </array>
   <string name="settings_group_downloads">بارگیری‌ها</string>
   <string name="settings_download_folder">پوشه بارگیری</string>
   <string name="settings_download_folder_summary">محل ذخیره بارگیری‌های جدید</string>

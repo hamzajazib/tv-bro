@@ -580,6 +580,15 @@
   <string name="settings_web_cache_cleared">Cache web cancellata</string>
   <string name="settings_engine_debug">Debug del motore web</string>
   <string name="settings_engine_debug_summary">Un computer collegato per il debug può vedere le pagine e i cookie</string>
+  <string name="settings_history_retention">Conserva la cronologia</string>
+  <string name="settings_history_retention_summary">Le visite più vecchie vengono eliminate</string>
+  <array name="history_retention">
+    <item>1 settimana</item>
+    <item>1 mese</item>
+    <item>3 mesi</item>
+    <item>6 mesi</item>
+    <item>1 anno</item>
+  </array>
   <string name="settings_group_downloads">Download</string>
   <string name="settings_download_folder">Cartella dei download</string>
   <string name="settings_download_folder_summary">Dove vengono salvati i nuovi download</string>

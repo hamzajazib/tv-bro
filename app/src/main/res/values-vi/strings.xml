@@ -552,6 +552,15 @@
   <string name="settings_web_cache_cleared">Đã xóa bộ nhớ đệm web</string>
   <string name="settings_engine_debug">Gỡ lỗi công cụ web</string>
   <string name="settings_engine_debug_summary">Máy tính được kết nối để gỡ lỗi có thể xem trang và cookie</string>
+  <string name="settings_history_retention">Lưu lịch sử</string>
+  <string name="settings_history_retention_summary">Các lượt truy cập cũ hơn sẽ bị xóa</string>
+  <array name="history_retention">
+    <item>1 tuần</item>
+    <item>1 tháng</item>
+    <item>3 tháng</item>
+    <item>6 tháng</item>
+    <item>1 năm</item>
+  </array>
   <string name="settings_group_downloads">Tải xuống</string>
   <string name="settings_download_folder">Thư mục tải xuống</string>
   <string name="settings_download_folder_summary">Nơi lưu tệp tải xuống mới</string>

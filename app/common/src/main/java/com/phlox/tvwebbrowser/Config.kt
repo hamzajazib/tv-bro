@@ -75,6 +75,7 @@ class Config(val prefs: SharedPreferences, private val credentialsPrefs: SharedP
         const val CHANNEL_BOOKMARKS_FOLDER_KEY = "channel_bookmarks_folder"
         const val CHANNEL_TABS_KEY = "channel_tabs"
         const val CHANNEL_DOWNLOADS_KEY = "channel_downloads"
+        const val HISTORY_RETENTION_KEY = "history_retention"
         /** The prefs of [credentialsPrefs] (the file `credentials.xml`), left out of backups (`backup_rules.xml`) */
         const val CREDENTIALS_PREFS_NAME = "credentials"
 
@@ -121,6 +122,11 @@ class Config(val prefs: SharedPreferences, private val credentialsPrefs: SharedP
 
     enum class HomePageLinksMode {
         BOOKMARKS, LATEST_HISTORY, MOST_VISITED
+    }
+
+    /** How long a visit stays in the browsing history: [days] */
+    enum class HistoryRetention(val days: Int) {
+        WEEK(7), MONTH(30), THREE_MONTHS(90), SIX_MONTHS(180), YEAR(365)
     }
 
     /** The bookmarks the channel of the TV home screen shows */
@@ -453,6 +459,14 @@ class Config(val prefs: SharedPreferences, private val credentialsPrefs: SharedP
         get() = prefs.getLong(CHANNEL_BOOKMARKS_FOLDER_KEY, 0L)
         set(value) {
             prefs.edit().putLong(CHANNEL_BOOKMARKS_FOLDER_KEY, value).apply()
+        }
+
+    /** Visits older than this are deleted from the browsing history ([HistoryRetention.YEAR] by default) */
+    var historyRetention: HistoryRetention
+        get() = prefs.getString(HISTORY_RETENTION_KEY, null)
+            ?.let { name -> HistoryRetention.entries.find { it.name == name } } ?: HistoryRetention.YEAR
+        set(value) {
+            prefs.edit().putString(HISTORY_RETENTION_KEY, value.name).apply()
         }
 
     /** The open tabs are a channel of the Android TV home screen */

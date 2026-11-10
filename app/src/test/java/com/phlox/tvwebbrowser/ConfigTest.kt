@@ -19,6 +19,16 @@ class ConfigTest {
     }
 
     @Test
+    fun historyIsKeptForAYearByDefault() {
+        assertEquals(Config.HistoryRetention.YEAR, config.historyRetention)
+        config.historyRetention = Config.HistoryRetention.WEEK
+        assertEquals(Config.HistoryRetention.WEEK, config.historyRetention)
+        //a value this version does not know
+        config.prefs.edit().putString(Config.HISTORY_RETENTION_KEY, "FOREVER").commit()
+        assertEquals(Config.HistoryRetention.YEAR, config.historyRetention)
+    }
+
+    @Test
     fun adBlockEnabledFollowsThePrefs() {
         //another process (incognito) writes the same prefs
         config.prefs.edit().putBoolean(Config.ADBLOCK_ENABLED_PREF_KEY, false).commit()

@@ -641,6 +641,17 @@
     <string name="settings_web_cache_cleared">Web cache cleared</string>
     <string name="settings_engine_debug">Web engine debugging</string>
     <string name="settings_engine_debug_summary">A computer connected for debugging can see pages and cookies</string>
+    <!-- the time visits stay in the history -->
+    <string name="settings_history_retention">Keep history for</string>
+    <string name="settings_history_retention_summary">Older visits are deleted</string>
+    <!-- the order of Config.HistoryRetention -->
+    <array name="history_retention">
+        <item>1 week</item>
+        <item>1 month</item>
+        <item>3 months</item>
+        <item>6 months</item>
+        <item>1 year</item>
+    </array>
     <string name="settings_group_downloads">Downloads</string>
     <string name="settings_download_folder">Download folder</string>
     <string name="settings_download_folder_summary">Where new downloads are saved</string>

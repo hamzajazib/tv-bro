@@ -594,6 +594,15 @@
   <string name="settings_web_cache_cleared">Веб-кеш очищен</string>
   <string name="settings_engine_debug">Отладка веб-движка</string>
   <string name="settings_engine_debug_summary">Компьютер, подключённый для отладки, может видеть страницы и cookie</string>
+  <string name="settings_history_retention">Хранить историю</string>
+  <string name="settings_history_retention_summary">Более старые посещения удаляются</string>
+  <array name="history_retention">
+    <item>1 неделя</item>
+    <item>1 месяц</item>
+    <item>3 месяца</item>
+    <item>6 месяцев</item>
+    <item>1 год</item>
+  </array>
   <string name="settings_group_downloads">Загрузки</string>
   <string name="settings_download_folder">Папка загрузок</string>
   <string name="settings_download_folder_summary">Куда сохраняются новые загрузки</string>

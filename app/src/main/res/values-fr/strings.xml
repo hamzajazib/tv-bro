@@ -581,6 +581,15 @@
     <string name="settings_web_cache_cleared">Cache web vidé</string>
     <string name="settings_engine_debug">Débogage du moteur web</string>
     <string name="settings_engine_debug_summary">Un ordinateur connecté pour le débogage peut voir les pages et les cookies</string>
+    <string name="settings_history_retention">Conserver l\'historique</string>
+    <string name="settings_history_retention_summary">Les visites plus anciennes sont supprimées</string>
+    <array name="history_retention">
+        <item>1 semaine</item>
+        <item>1 mois</item>
+        <item>3 mois</item>
+        <item>6 mois</item>
+        <item>1 an</item>
+    </array>
     <string name="settings_group_downloads">Téléchargements</string>
     <string name="settings_download_folder">Dossier de téléchargement</string>
     <string name="settings_download_folder_summary">Où sont enregistrés les nouveaux téléchargements</string>

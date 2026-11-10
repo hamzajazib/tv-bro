@@ -270,6 +270,16 @@ class AppSettingsStore(
     override fun bindingOf(shortcut: Shortcut): KeyBinding = shortcuts.bindingOf(shortcut)
 
     override suspend fun clearCache() = WebEngineFactory.clearCache(AppContext.get())
+    override var historyRetention: Config.HistoryRetention
+        get() = config.historyRetention
+        set(value) {
+            config.historyRetention = value
+            //a shorter time applies at once
+            TVBro.container.appScope.launch {
+                TVBro.container.data.history.trim(value)
+                controller.homePageLinks.load()
+            }
+        }
     override var webEngineDebug: Boolean by config::webEngineDebug
     override val downloadFolderPickerAvailable: Boolean by lazy { DownloadFolder.pickerAvailable(AppContext.get()) }
     override val downloadFolderName: String?
