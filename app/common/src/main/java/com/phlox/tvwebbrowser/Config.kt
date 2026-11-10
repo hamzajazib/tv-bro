@@ -14,6 +14,10 @@ class Config(val prefs: SharedPreferences, private val credentialsPrefs: SharedP
     companion object {
         const val SEARCH_ENGINE_URL_PREF_KEY = "search_engine_url"
         const val SEARCH_ENGINE_AS_HOME_PAGE_KEY = "search_engine_as_home_page"
+        const val SEARCH_SUGGESTIONS_KEY = "search_suggestions"
+        const val CUSTOM_SEARCH_SUGGEST_URL_KEY = "custom_search_suggest_url"
+        /** The host of the search engine [CUSTOM_SEARCH_SUGGEST_URL_KEY] was given for */
+        const val CUSTOM_SEARCH_SUGGEST_HOST_KEY = "custom_search_suggest_host"
         const val HOME_PAGE_KEY = "home_page"
         const val DEFAULT_SITE_VIEW_KEY = "default_desktop_view"
         const val USER_AGENT_KEY = "user_agent"
@@ -79,7 +83,26 @@ class Config(val prefs: SharedPreferences, private val credentialsPrefs: SharedP
         val SearchEnginesURLs = listOf("https://www.google.com/search?q=[query]", "https://www.bing.com/search?q=[query]",
             "https://search.yahoo.com/search?p=[query]", "https://duckduckgo.com/?q=[query]",
             "https://yandex.com/search/?text=[query]", "https://www.startpage.com/sp/search?query=[query]", "")
+        /**
+         * Where each search engine gives the suggestions of a text ("[query]"), as OpenSearch suggestions:
+         * a JSON array of the text and the array of the suggestions
+         */
+        val SearchEnginesSuggestURLs = listOf(
+            "https://suggestqueries.google.com/complete/search?client=firefox&q=[query]",
+            "https://api.bing.com/osjson.aspx?query=[query]",
+            "https://ff.search.yahoo.com/gossip?output=fxjson&command=[query]",
+            "https://duckduckgo.com/ac/?q=[query]&type=list",
+            "https://suggest.yandex.com/suggest-ff.cgi?part=[query]",
+            "https://www.startpage.com/osuggestions?q=[query]", "")
         const val HOME_PAGE_URL = "https://tvbro.phlox.dev/appcontent/home/"
+
+        /** The host of the address of a search engine (with "[query]") in lower case, null when it has none */
+        fun searchEngineHost(url: String): String? = try {
+            //the placeholder is not a legal part of a URI
+            java.net.URI(url.trim().replace("[query]", "q")).host?.lowercase()?.ifEmpty { null }
+        } catch (e: Exception) {
+            null
+        }
         //const val HOME_PAGE_URL = "http://10.0.2.2:5000/appcontent/home/"
     }
 
@@ -257,6 +280,34 @@ class Config(val prefs: SharedPreferences, private val credentialsPrefs: SharedP
         }
 
     var searchEngineURL = ObservableStringPreference(SearchEnginesURLs[0], SEARCH_ENGINE_URL_PREF_KEY)
+
+    /**
+     * The text typed into the address field is sent to the search engine, which suggests searches for it
+     * (never in incognito mode)
+     */
+    var searchSuggestions: Boolean
+        get() = prefs.getBoolean(SEARCH_SUGGESTIONS_KEY, true)
+        set(value) {
+            prefs.edit().putBoolean(SEARCH_SUGGESTIONS_KEY, value).apply()
+        }
+
+    /**
+     * Where the user's own search engine gives its suggestions, with "[query]" in place of the text; blank
+     * when it has none. It is kept for the site of the search engine it was given for: blank again once the
+     * engine ([searchEngineURL]) is of another host.
+     */
+    var customSearchSuggestUrl: String
+        get() {
+            val url = prefs.getString(CUSTOM_SEARCH_SUGGEST_URL_KEY, "")!!
+            if (url.isEmpty()) return ""
+            val host = searchEngineHost(searchEngineURL.value)
+            return if (host != null && host == prefs.getString(CUSTOM_SEARCH_SUGGEST_HOST_KEY, null)) url else ""
+        }
+        set(value) {
+            prefs.edit().putString(CUSTOM_SEARCH_SUGGEST_URL_KEY, value.trim())
+                .putString(CUSTOM_SEARCH_SUGGEST_HOST_KEY, searchEngineHost(searchEngineURL.value))
+                .apply()
+        }
 
     var allowAutoplayMedia: Boolean
         get() = prefs.getBoolean(ALLOW_AUTOPLAY_MEDIA, false)

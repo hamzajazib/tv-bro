@@ -456,6 +456,13 @@
   <string name="settings_custom_url">URL tùy chỉnh</string>
   <string name="settings_search_url">Địa chỉ tìm kiếm</string>
   <string name="settings_search_url_hint">Địa chỉ có [query] thay cho từ khóa</string>
+  <string name="settings_search_suggestions">Gợi ý tìm kiếm</string>
+  <string name="settings_search_suggestions_summary">Nội dung bạn nhập vào thanh địa chỉ được gửi tới công cụ tìm kiếm. Địa chỉ không được gửi. Tắt ở chế độ ẩn danh.</string>
+  <string name="settings_search_suggest_url">Địa chỉ gợi ý</string>
+  <string name="settings_search_suggest_url_hint">Địa chỉ có [query] ở vị trí các từ</string>
+  <string name="settings_search_suggest_detect">Phát hiện</string>
+  <string name="settings_search_suggest_not_found">Trang web không cho biết địa chỉ gợi ý của nó</string>
+  <string name="search_suggestion_fill">Đưa vào thanh địa chỉ</string>
   <string name="settings_group_home_page">Trang chủ</string>
   <string name="settings_home_page_summary">Trang mở bằng nút Trang chủ</string>
   <string name="settings_home_page_url">Địa chỉ trang chủ</string>

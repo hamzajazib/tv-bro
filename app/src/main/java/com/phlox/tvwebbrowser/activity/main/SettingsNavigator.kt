@@ -45,7 +45,7 @@ class SettingsNavigator(
 
     /** The settings, and the rows that act */
     enum class Key {
-        SEARCH_ENGINE, SEARCH_URL, HOME_PAGE, HOME_PAGE_URL, HOME_PAGE_LINKS, HOME_PAGE_BOOKMARKS_FOLDER,
+        SEARCH_ENGINE, SEARCH_URL, SEARCH_SUGGESTIONS, SEARCH_SUGGEST_URL, HOME_PAGE, HOME_PAGE_URL, HOME_PAGE_LINKS, HOME_PAGE_BOOKMARKS_FOLDER,
         CHANNEL_BOOKMARKS, CHANNEL_BOOKMARKS_SOURCE, CHANNEL_TABS, CHANNEL_DOWNLOADS,
         SITE_VIEW, USER_AGENT, USER_AGENT_STRING, AUTOPLAY, AD_BLOCK, TRACKING_PROTECTION, FILTER_LIST, REGIONAL_LIST, CUSTOM_LIST, UPDATE_LISTS, VIDEO_PLAYER, VIDEO_HINT,
         INTERFACE, THEME, DARKENING, KEEP_SCREEN_ON, MATCH_FRAME_RATE,
@@ -87,6 +87,15 @@ class SettingsNavigator(
 
         /** The address of the search engine, with [query] in place of the words */
         var searchEngineUrl: String
+        /** The search engine suggests searches for the text typed into the address field */
+        var searchSuggestions: Boolean
+        /**
+         * Where the user's own search engine gives its suggestions, with [query] in place of the text; ""
+         * for none. It is of the site of [searchEngineUrl]: "" again once the engine is of another site.
+         */
+        var searchSuggestUrl: String
+        /** What the site of the engine at [searchUrl] tells [searchSuggestUrl] is; null when it tells none */
+        suspend fun detectSearchSuggestUrl(searchUrl: String): String?
         val homePageMode: Config.HomePageMode
         val homePageUrl: String
         val homePageLinksMode: Config.HomePageLinksMode
@@ -383,6 +392,8 @@ class SettingsNavigator(
     private var shown = false
     private var updates: Updates? = null
     private var filterListsUpdating = false
+    /** The site of the search engine is asked for the address of its suggestions */
+    private var detectingSuggestUrl = false
     /** Custom URL was chosen and no address is typed yet */
     private var customSearchChosen = false
     /** Custom was chosen for the User-Agent and none is typed yet */
@@ -548,6 +559,7 @@ class SettingsNavigator(
 
     fun toggle(key: Key) {
         when (key) {
+            Key.SEARCH_SUGGESTIONS -> store.searchSuggestions = !store.searchSuggestions
             Key.AUTOPLAY -> store.allowAutoplayMedia = !store.allowAutoplayMedia
             Key.CHANNEL_BOOKMARKS -> store.channelBookmarks = !store.channelBookmarks
             Key.CHANNEL_TABS -> store.channelTabs = !store.channelTabs
@@ -599,6 +611,10 @@ class SettingsNavigator(
                 if (value.isEmpty() || value == store.searchEngineUrl) return
                 store.searchEngineUrl = value
                 customSearchChosen = false
+            }
+            Key.SEARCH_SUGGEST_URL -> {
+                if (value == store.searchSuggestUrl) return
+                store.searchSuggestUrl = value
             }
             Key.USER_AGENT_STRING -> {
                 //an empty field while Custom is chosen changes nothing; emptied, it gives Auto back
@@ -688,6 +704,24 @@ class SettingsNavigator(
                         filterListsUpdating = false
                         host.showMessage(if (ok) R.drawable.ic_check else R.drawable.ic_warning,
                             string(if (ok) R.string.filter_lists_updated else R.string.filter_lists_update_failed))
+                        render()
+                    }
+                }
+                Key.SEARCH_SUGGEST_URL -> if (!detectingSuggestUrl) {
+                    val searchUrl = store.searchEngineUrl
+                    detectingSuggestUrl = true
+                    render()
+                    scope.launch {
+                        val found = store.detectSearchSuggestUrl(searchUrl)
+                        detectingSuggestUrl = false
+                        //the engine may be another one by now
+                        if (searchUrl == store.searchEngineUrl) {
+                            if (found != null) {
+                                store.searchSuggestUrl = found
+                            } else {
+                                host.showMessage(R.drawable.ic_warning, string(R.string.settings_search_suggest_not_found))
+                            }
+                        }
                         render()
                     }
                 }
@@ -797,6 +831,14 @@ class SettingsNavigator(
         if (engine == CUSTOM_SEARCH_ENGINE) {
             search += Row.Field(Key.SEARCH_URL, string(R.string.settings_search_url), null,
                 if (customSearchChosen) "" else store.searchEngineUrl, string(R.string.settings_search_url_hint))
+        }
+        search += Row.Toggle(Key.SEARCH_SUGGESTIONS, string(R.string.settings_search_suggestions),
+            string(R.string.settings_search_suggestions_summary), store.searchSuggestions)
+        //the engines of the list have their suggestions; the user's own one once it has an address
+        if (engine == CUSTOM_SEARCH_ENGINE && !customSearchChosen && store.searchSuggestions) {
+            search += Row.Field(Key.SEARCH_SUGGEST_URL, string(R.string.settings_search_suggest_url), null,
+                store.searchSuggestUrl, string(R.string.settings_search_suggest_url_hint),
+                action = string(R.string.settings_search_suggest_detect), busy = detectingSuggestUrl)
         }
         val mode = store.homePageMode
         val home = arrayListOf<Row>(Row.Choice(Key.HOME_PAGE, string(R.string.home_page),

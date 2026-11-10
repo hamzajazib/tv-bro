@@ -482,6 +482,13 @@
   <string name="settings_custom_url">URL personalizzato</string>
   <string name="settings_search_url">Indirizzo di ricerca</string>
   <string name="settings_search_url_hint">Indirizzo con [query] al posto delle parole</string>
+  <string name="settings_search_suggestions">Suggerimenti di ricerca</string>
+  <string name="settings_search_suggestions_summary">Ciò che scrivi nella barra degli indirizzi viene inviato al motore di ricerca. Gli indirizzi non vengono inviati. Disattivato in incognito.</string>
+  <string name="settings_search_suggest_url">Indirizzo dei suggerimenti</string>
+  <string name="settings_search_suggest_url_hint">Indirizzo con [query] al posto delle parole</string>
+  <string name="settings_search_suggest_detect">Rileva</string>
+  <string name="settings_search_suggest_not_found">Il sito non indica l\'indirizzo dei suoi suggerimenti</string>
+  <string name="search_suggestion_fill">Metti nella barra degli indirizzi</string>
   <string name="settings_group_home_page">Pagina iniziale</string>
   <string name="settings_home_page_summary">La pagina del pulsante Home</string>
   <string name="settings_home_page_url">Indirizzo della pagina iniziale</string>

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A row of the address suggestions of the phone bar: the favicon, the title and the address. Not focusable,
-     so a tap leaves the focus (and the keyboard) in the address field. -->
+<!-- A row of the address suggestions of the phone bar: the favicon, the title and the address, or a search with
+     the arrow that puts it into the field. Not focusable, so a tap leaves the focus (and the keyboard) in the
+     address field. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -52,4 +54,16 @@
         android:ellipsize="end"
         tools:text="www.youtube.com" />
   </LinearLayout>
+
+  <ImageButton
+      android:id="@+id/ibFill"
+      android:layout_width="@dimen/ds_phone_download_row_height"
+      android:layout_height="@dimen/ds_phone_download_row_height"
+      android:background="?attr/selectableItemBackgroundBorderless"
+      android:focusable="false"
+      android:scaleType="center"
+      android:src="@drawable/ic_arrow_insert"
+      android:contentDescription="@string/search_suggestion_fill"
+      android:visibility="gone"
+      app:tint="?attr/tbColorDsIcon" />
 </LinearLayout>

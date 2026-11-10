@@ -1,6 +1,6 @@
 ### Privacy policy ###
 
-**Last updated:** March 28, 2026
+**Last updated:** November 10, 2026
 
 This policy describes how **TV Bro** (“the application”) handles information. The application is open-source software. The primary author is **Fedir Tsapana**. Development may also involve a **changing set of voluntary contributors**; you can see the current list on the [GitHub contributors page](https://github.com/truefedex/tv-bro/graphs/contributors).
 
@@ -23,6 +23,14 @@ TV Bro is a **web browser**. When you browse the internet:
 - **Using the web can be risky.** You may expose passwords, payment details, location, or other sensitive information if you enter them on untrusted sites or over insecure connections.
 
 You are responsible for choosing which sites you trust and what information you share online.
+
+#### Search suggestions ####
+
+While you type in the address bar, the application sends the typed text to the **search engine chosen in the settings** (Google by default) and shows the searches it suggests. These requests go **from your device directly to the search engine**, not to us, and are handled under that search engine’s privacy policy. The application sends them **without cookies**, so they are not tied to an account you are signed in to; the search engine still sees your network address.
+
+- Text that looks like a **web address** is not sent.
+- Nothing is sent in **incognito mode**.
+- You can turn this off: **Settings → Search and home page → Search suggestions**.
 
 #### Incognito mode ####
 

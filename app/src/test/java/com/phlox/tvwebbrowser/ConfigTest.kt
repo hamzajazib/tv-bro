@@ -28,6 +28,26 @@ class ConfigTest {
     }
 
     @Test
+    fun theAddressOfSuggestionsStaysWithTheSiteOfItsSearchEngine() {
+        assertTrue(config.searchSuggestions)
+        assertEquals("", config.customSearchSuggestUrl)
+        config.searchEngineURL.value = "https://search.example.com/?q=[query]"
+        config.customSearchSuggestUrl = " https://ac.example.com/?q=[query] "
+        assertEquals("https://ac.example.com/?q=[query]", config.customSearchSuggestUrl)
+        //the same site with other parameters
+        config.searchEngineURL.value = "https://Search.Example.com/find?text=[query]&lang=uk"
+        assertEquals("https://ac.example.com/?q=[query]", config.customSearchSuggestUrl)
+        //another engine (also set by the home page): the address is not its
+        config.searchEngineURL.value = "https://other.example.org/?q=[query]"
+        assertEquals("", config.customSearchSuggestUrl)
+        config.searchEngineURL.value = Config.SearchEnginesURLs[0]
+        assertEquals("", config.customSearchSuggestUrl)
+        assertEquals("search.example.com", Config.searchEngineHost(" https://search.example.com:8080/?q=[query] "))
+        assertNull(Config.searchEngineHost("not an address"))
+        assertNull(Config.searchEngineHost(""))
+    }
+
+    @Test
     fun proxyIsUsedOnceItsAddressIsComplete() {
         assertNull(config.proxy)
         config.proxyEnabled = true

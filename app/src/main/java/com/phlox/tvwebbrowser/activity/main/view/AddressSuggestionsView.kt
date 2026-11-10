@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -24,12 +25,15 @@ import kotlinx.coroutines.launch
  * The list of the address suggestions ([com.phlox.tvwebbrowser.activity.main.AddressSuggestions]): under the
  * address of the TV bar, above the phone bar. Its rows are not focusable, the focus stays in the address
  * field: on TV the D-pad chooses a row from the field ([moveHighlight], drawn as selected), a tap or a click
- * opens one ([onOpen]). Hidden without rows.
+ * opens one ([onOpen]); the arrow of a search puts its text into the field ([onFill]). Hidden without rows.
  */
 class AddressSuggestionsView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : LinearLayout(context, attrs) {
-    /** The layout of a row: the favicon (ivIcon), the title (tvTitle) and the address (tvCaption) */
+    /**
+     * The layout of a row: the favicon (ivIcon), the title (tvTitle), the address (tvCaption) and the arrow
+     * of a search (ibFill)
+     */
     @LayoutRes
     var rowLayout = R.layout.view_address_suggestion_row
     /**
@@ -41,7 +45,9 @@ class AddressSuggestionsView @JvmOverloads constructor(
             field = value
             gravity = if (value) Gravity.BOTTOM else Gravity.TOP
         }
-    var onOpen: ((url: String) -> Unit)? = null
+    var onOpen: ((row: Row) -> Unit)? = null
+    /** The arrow of a search was clicked: its text goes into the field */
+    var onFill: ((text: String) -> Unit)? = null
     /** Gives the favicon of a url (tests give none: the pool loads in a scope of its own) */
     var loadFavicon: suspend (url: String) -> Bitmap? = { FaviconsPool.get(it) }
     /** The chosen row changed (-1: none) */
@@ -61,15 +67,38 @@ class AddressSuggestionsView @JvmOverloads constructor(
         val icon: ImageView = view.findViewById(R.id.ivIcon)
         val title: TextView = view.findViewById(R.id.tvTitle)
         val caption: TextView = view.findViewById(R.id.tvCaption)
+        val fill: ImageButton = view.findViewById(R.id.ibFill)
+        var row: Row? = null
+        /** The page whose favicon the icon shows (or waits for) */
         var url: String? = null
 
         init {
-            view.setOnClickListener { url?.let { onOpen?.invoke(it) } }
+            view.setOnClickListener { row?.let { onOpen?.invoke(it) } }
+            fill.setOnClickListener { (row as? Row.Search)?.let { onFill?.invoke(it.text) } }
         }
 
         fun bind(row: Row) {
+            this.row = row
+            when (row) {
+                is Row.Page -> bind(row)
+                is Row.Search -> bind(row)
+            }
+        }
+
+        private fun bind(row: Row.Search) {
+            title.text = markWords(row.text, row.words, markColor)
+            caption.visibility = GONE
+            fill.visibility = VISIBLE
+            url = null
+            ImageViewCompat.setImageTintList(icon, iconTint)
+            icon.setImageResource(R.drawable.ic_search)
+        }
+
+        private fun bind(row: Row.Page) {
             title.text = markWords(row.title, row.words, markColor)
             caption.text = markWords(row.address, row.words, markColor)
+            caption.visibility = VISIBLE
+            fill.visibility = GONE
             if (url == row.url) return
             url = row.url
             ImageViewCompat.setImageTintList(icon, iconTint)
@@ -103,8 +132,12 @@ class AddressSuggestionsView @JvmOverloads constructor(
         if (measuredHeight > room) setMeasuredDimension(measuredWidthAndState, room)
     }
 
-    /** Shows the [rows], the best first (none: hidden); no row is chosen */
+    /**
+     * Shows the [rows], the best first (none: hidden). The chosen row stays chosen while it is among them
+     * (the searches come after the pages are shown), else none is.
+     */
     fun render(rows: List<Row>) {
+        val chosen = this.rows.getOrNull(highlighted)?.id
         this.rows = rows
         while (holders.size < rows.size) {
             val view = LayoutInflater.from(context).inflate(rowLayout, this, false)
@@ -116,7 +149,7 @@ class AddressSuggestionsView @JvmOverloads constructor(
         }
         for ((i, row) in rows.withIndex()) holders[holderIndex(i)].bind(row)
         visibility = if (rows.isEmpty()) GONE else VISIBLE
-        setHighlight(-1)
+        setHighlight(if (chosen == null) -1 else rows.indexOfFirst { it.id == chosen })
     }
 
     /** The holder (in the order of the views) of the row at [index] (in the order of [rows]) */
@@ -133,8 +166,8 @@ class AddressSuggestionsView @JvmOverloads constructor(
         return true
     }
 
-    /** The url of the chosen row, null when none is chosen */
-    val highlightedUrl: String? get() = rows.getOrNull(highlighted)?.url
+    /** The chosen row, null when none is chosen */
+    val highlightedRow: Row? get() = rows.getOrNull(highlighted)
 
     fun clearHighlight() = setHighlight(-1)
 

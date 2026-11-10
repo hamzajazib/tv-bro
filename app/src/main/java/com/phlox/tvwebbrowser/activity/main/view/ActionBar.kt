@@ -71,11 +71,12 @@ class ActionBar @JvmOverloads constructor(
 
     /**
      * While the address is edited, Down and Up choose a suggestion under it (the focus stays in the field),
-     * OK and Enter open the chosen one; Left and Right go back to the text
+     * OK and Enter open the chosen one; Left and Right go back to the text, Right with the text of the
+     * chosen search in the field, to go on with it
      */
     private val etUrlKeyListener = OnKeyListener { view, i, keyEvent ->
         val list = suggestionsView
-        val chosen = list?.highlightedUrl
+        val chosen = list?.highlightedRow
         when (keyEvent.keyCode) {
             KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
                 if (keyEvent.action == KeyEvent.ACTION_UP) {
@@ -99,7 +100,13 @@ class ActionBar @JvmOverloads constructor(
                 if (keyEvent.action == KeyEvent.ACTION_DOWN) list.moveHighlight(down = false)
                 return@OnKeyListener true
             }
-            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> list?.clearHighlight()
+            KeyEvent.KEYCODE_DPAD_RIGHT -> if (chosen is AddressSuggestions.Row.Search) {
+                if (keyEvent.action == KeyEvent.ACTION_DOWN) fillSuggestion(chosen.text)
+                return@OnKeyListener true
+            } else {
+                list?.clearHighlight()
+            }
+            KeyEvent.KEYCODE_DPAD_LEFT -> list?.clearHighlight()
         }
         false
     }
@@ -113,24 +120,35 @@ class ActionBar @JvmOverloads constructor(
         callback?.onUrlInputDone()
     }
 
-    /** Opens a suggestion of the history (a row of the list chosen or clicked) */
-    fun openSuggestion(url: String) {
+    /** Opens a suggestion (a row of the list chosen or clicked): a page of the history, or a search */
+    fun openSuggestion(row: AddressSuggestions.Row) {
         if (!editing) return
         stopEditing(submitted = true)
-        callback?.openUrl(url)
+        when (row) {
+            is AddressSuggestions.Row.Page -> callback?.openUrl(row.url)
+            is AddressSuggestions.Row.Search -> callback?.search(row.text)
+        }
         callback?.onUrlInputDone()
+    }
+
+    /** Puts a suggested search into the field, with a space for the next word; the editing goes on */
+    fun fillSuggestion(text: String) {
+        if (!editing) return
+        suggestionsView?.clearHighlight()
+        inlineCompletion?.replaceText("$text ")
     }
 
     private var suggestions: AddressSuggestions? = null
     private var suggestionsView: AddressSuggestionsView? = null
     private var inlineCompletion: InlineAddressCompletion? = null
 
-    /** The suggestions of the history follow the address typed, in the [view] under it */
+    /** The suggestions follow the address typed, in the [view] under it */
     fun setSuggestions(suggestions: AddressSuggestions, view: AddressSuggestionsView) {
         this.suggestions = suggestions
         this.suggestionsView = view
         inlineCompletion = InlineAddressCompletion(vb.etUrl, suggestions::inlineCompletion, suggestions::query)
         view.onOpen = ::openSuggestion
+        view.onFill = ::fillSuggestion
     }
 
     /** The address field, which the suggestions are under */

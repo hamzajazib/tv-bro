@@ -468,6 +468,13 @@
   <string name="settings_custom_url">Eigene URL</string>
   <string name="settings_search_url">Suchadresse</string>
   <string name="settings_search_url_hint">Adresse mit [query] anstelle der Suchwörter</string>
+  <string name="settings_search_suggestions">Suchvorschläge</string>
+  <string name="settings_search_suggestions_summary">Was Sie in die Adressleiste eingeben, wird an die Suchmaschine gesendet. Adressen werden nicht gesendet. Im Inkognito-Modus aus.</string>
+  <string name="settings_search_suggest_url">Adresse der Vorschläge</string>
+  <string name="settings_search_suggest_url_hint">Adresse mit [query] anstelle der Wörter</string>
+  <string name="settings_search_suggest_detect">Ermitteln</string>
+  <string name="settings_search_suggest_not_found">Die Website nennt keine Adresse für Vorschläge</string>
+  <string name="search_suggestion_fill">In die Adressleiste einfügen</string>
   <string name="settings_group_home_page">Startseite</string>
   <string name="settings_home_page_summary">Die Seite der Startseiten-Taste</string>
   <string name="settings_home_page_url">Adresse der Startseite</string>

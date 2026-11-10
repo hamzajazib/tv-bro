@@ -533,6 +533,13 @@
     <string name="settings_custom_url">Custom URL</string>
     <string name="settings_search_url">Search address</string>
     <string name="settings_search_url_hint">Address with [query] in place of the words</string>
+    <string name="settings_search_suggestions">Search suggestions</string>
+    <string name="settings_search_suggestions_summary">What you type in the address bar is sent to the search engine. Addresses are not sent. Off in incognito mode.</string>
+    <string name="settings_search_suggest_url">Suggestions address</string>
+    <string name="settings_search_suggest_url_hint">Address with [query] in place of the words</string>
+    <string name="settings_search_suggest_detect">Detect</string>
+    <string name="settings_search_suggest_not_found">The site does not tell the address of its suggestions</string>
+    <string name="search_suggestion_fill">Put into the address bar</string>
     <string name="settings_group_home_page">Home page</string>
     <string name="settings_home_page_summary">The page of the Home button</string>
     <string name="settings_home_page_url">Home page address</string>

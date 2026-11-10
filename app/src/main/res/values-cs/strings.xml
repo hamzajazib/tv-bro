@@ -496,6 +496,13 @@
     <string name="settings_custom_url">Vlastní URL</string>
     <string name="settings_search_url">Adresa vyhledávání</string>
     <string name="settings_search_url_hint">Adresa s [query] místo hledaných slov</string>
+    <string name="settings_search_suggestions">Návrhy vyhledávání</string>
+    <string name="settings_search_suggestions_summary">Co píšete do adresního řádku, se odesílá vyhledávači. Adresy se neodesílají. V anonymním režimu vypnuto.</string>
+    <string name="settings_search_suggest_url">Adresa návrhů</string>
+    <string name="settings_search_suggest_url_hint">Adresa s [query] na místě slov</string>
+    <string name="settings_search_suggest_detect">Zjistit</string>
+    <string name="settings_search_suggest_not_found">Web neuvádí adresu svých návrhů</string>
+    <string name="search_suggestion_fill">Vložit do adresního řádku</string>
     <string name="settings_group_home_page">Domovská stránka</string>
     <string name="settings_home_page_summary">Stránka tlačítka Domů</string>
     <string name="settings_home_page_url">Adresa domovské stránky</string>

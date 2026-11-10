@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A row of the address suggestions of the TV bar: the favicon, the title and the address. Not focusable:
-     the focus stays in the address field, the row chosen with the D-pad is selected. -->
+<!-- A row of the address suggestions of the TV bar: the favicon, the title and the address, or a search with
+     the arrow that puts it into the field (Right of the remote). Not focusable: the focus stays in the address
+     field, the row chosen with the D-pad is selected. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -52,4 +54,16 @@
         android:ellipsize="end"
         tools:text="www.youtube.com" />
   </LinearLayout>
+
+  <ImageButton
+      android:id="@+id/ibFill"
+      android:layout_width="@dimen/ds_download_row_height"
+      android:layout_height="@dimen/ds_download_row_height"
+      android:background="@null"
+      android:focusable="false"
+      android:scaleType="center"
+      android:src="@drawable/ic_arrow_insert"
+      android:contentDescription="@string/search_suggestion_fill"
+      android:visibility="gone"
+      app:tint="?attr/tbColorDsIcon" />
 </LinearLayout>

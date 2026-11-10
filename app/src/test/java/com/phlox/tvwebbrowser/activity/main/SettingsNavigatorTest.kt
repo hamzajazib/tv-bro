@@ -31,6 +31,17 @@ class SettingsNavigatorTest {
         override var startupValues = SettingsNavigator.StartupValues(Config.InterfaceMode.AUTO, Config.Theme.SYSTEM,
             darkening = false, webEngineDebug = false)
         override var searchEngineUrl = Config.SearchEnginesURLs[0]
+        override var searchSuggestions = true
+        override var searchSuggestUrl = ""
+        /** What the site of the engine tells; the detection waits while [detecting] is set */
+        var detectedSuggestUrl: String? = null
+        var detecting: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+        val detections = ArrayList<String>()
+        override suspend fun detectSearchSuggestUrl(searchUrl: String): String? {
+            detections += searchUrl
+            detecting?.await()
+            return detectedSuggestUrl
+        }
         override var homePageMode = Config.HomePageMode.HOME_PAGE
         override var homePageUrl = Config.HOME_URL_ALIAS
         override var homePageLinksMode = Config.HomePageLinksMode.BOOKMARKS
@@ -178,6 +189,88 @@ class SettingsNavigatorTest {
         SettingsNavigator(context, store, CoroutineScope(Dispatchers.Unconfined), host, tvUi)
 
     private fun rows(): List<Row> = screen.sections.flatMap { it.rows }
+
+    @Test
+    fun searchSuggestionsCanBeTurnedOff() {
+        val navigator = navigator(tvUi = true)
+        navigator.show(Category.SEARCH)
+        val toggle = rows().first { it.key == Key.SEARCH_SUGGESTIONS } as Row.Toggle
+        assertTrue(toggle.checked)
+        //the engines of the list need no address of suggestions
+        assertTrue(rows().none { it.key == Key.SEARCH_SUGGEST_URL })
+        navigator.toggle(toggle)
+        assertFalse(store.searchSuggestions)
+        assertFalse((rows().first { it.key == Key.SEARCH_SUGGESTIONS } as Row.Toggle).checked)
+    }
+
+    @Test
+    fun theUsersSearchEngineHasAnAddressOfSuggestions() {
+        val navigator = navigator(tvUi = false)
+        navigator.show(Category.SEARCH)
+        navigator.choose(Key.SEARCH_ENGINE, SettingsNavigator.CUSTOM_SEARCH_ENGINE)
+        //not before the engine has an address
+        assertTrue(rows().none { it.key == Key.SEARCH_SUGGEST_URL })
+        navigator.setText(Key.SEARCH_URL, "https://search.example.com/?q=[query]")
+        val field = rows().first { it.key == Key.SEARCH_SUGGEST_URL } as Row.Field
+        assertEquals("", field.text)
+        assertEquals(context.getString(R.string.settings_search_suggest_detect), field.action)
+        assertFalse(field.busy)
+        navigator.setText(Key.SEARCH_SUGGEST_URL, "  https://search.example.com/ac?q=[query] ")
+        assertEquals("https://search.example.com/ac?q=[query]", store.searchSuggestUrl)
+        assertEquals(store.searchSuggestUrl, (rows().first { it.key == Key.SEARCH_SUGGEST_URL } as Row.Field).text)
+        //emptied: no suggestions
+        navigator.setText(Key.SEARCH_SUGGEST_URL, "")
+        assertEquals("", store.searchSuggestUrl)
+        //the field goes with the suggestions and with the engine
+        navigator.toggle(Key.SEARCH_SUGGESTIONS)
+        assertTrue(rows().none { it.key == Key.SEARCH_SUGGEST_URL })
+        navigator.toggle(Key.SEARCH_SUGGESTIONS)
+        navigator.choose(Key.SEARCH_ENGINE, 1)
+        assertTrue(rows().none { it.key == Key.SEARCH_SUGGEST_URL })
+    }
+
+    @Test
+    fun theAddressOfSuggestionsIsDetectedFromTheSite() {
+        val searchUrl = "https://search.example.com/?q=[query]"
+        store.searchEngineUrl = searchUrl
+        val navigator = navigator(tvUi = true)
+        navigator.show(Category.SEARCH)
+        fun field() = rows().first { it.key == Key.SEARCH_SUGGEST_URL } as Row.Field
+
+        store.detecting = kotlinx.coroutines.CompletableDeferred()
+        navigator.act(field())
+        assertTrue(field().busy)
+        //one question at a time
+        navigator.act(field())
+        assertEquals(listOf(searchUrl), store.detections)
+        store.detecting!!.complete(Unit)
+        assertFalse(field().busy)
+        assertEquals("", store.searchSuggestUrl)
+        assertEquals(listOf("message " + context.getString(R.string.settings_search_suggest_not_found)), log)
+
+        log.clear()
+        store.detecting = null
+        store.detectedSuggestUrl = "https://search.example.com/ac?q=[query]"
+        navigator.act(field())
+        assertEquals("https://search.example.com/ac?q=[query]", store.searchSuggestUrl)
+        assertEquals("https://search.example.com/ac?q=[query]", field().text)
+        assertTrue(log.isEmpty())
+    }
+
+    @Test
+    fun anAnswerForAnotherEngineIsDropped() {
+        store.searchEngineUrl = "https://search.example.com/?q=[query]"
+        val navigator = navigator(tvUi = true)
+        navigator.show(Category.SEARCH)
+        store.detecting = kotlinx.coroutines.CompletableDeferred()
+        store.detectedSuggestUrl = "https://search.example.com/ac?q=[query]"
+        navigator.act(rows().first { it.key == Key.SEARCH_SUGGEST_URL })
+        navigator.setText(Key.SEARCH_URL, "https://other.example.org/?q=[query]")
+        store.detecting!!.complete(Unit)
+        assertEquals("", store.searchSuggestUrl)
+        assertFalse((rows().first { it.key == Key.SEARCH_SUGGEST_URL } as Row.Field).busy)
+        assertTrue(log.isEmpty())
+    }
     private fun keys(): List<Key> = rows().map { it.key }
     private inline fun <reified T : Row> row(key: Key): T = rows().first { it.key == key } as T
 

@@ -495,6 +495,13 @@
   <string name="settings_custom_url">כתובת URL מותאמת אישית</string>
   <string name="settings_search_url">כתובת החיפוש</string>
   <string name="settings_search_url_hint">כתובת עם [query] במקום המילים</string>
+  <string name="settings_search_suggestions">הצעות חיפוש</string>
+  <string name="settings_search_suggestions_summary">מה שמקלידים בשורת הכתובת נשלח למנוע החיפוש. כתובות אינן נשלחות. כבוי במצב גלישה בסתר.</string>
+  <string name="settings_search_suggest_url">כתובת ההצעות</string>
+  <string name="settings_search_suggest_url_hint">כתובת עם [query] במקום המילים</string>
+  <string name="settings_search_suggest_detect">זיהוי</string>
+  <string name="settings_search_suggest_not_found">האתר אינו מציין את כתובת ההצעות שלו</string>
+  <string name="search_suggestion_fill">הכנסה לשורת הכתובת</string>
   <string name="settings_group_home_page">דף הבית</string>
   <string name="settings_home_page_summary">הדף של כפתור הבית</string>
   <string name="settings_home_page_url">כתובת דף הבית</string>

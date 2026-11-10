@@ -32,7 +32,7 @@ class PhoneBar @JvmOverloads constructor(
         fun showMenu()
         /** Navigates to the url or searches the text */
         fun search(text: String)
-        /** Opens the [url] as it is (a suggestion of the history) */
+        /** Opens the [url] as it is (a page the history suggests) */
         fun openUrl(url: String)
         /** The address is edited or not any more (Back ends the editing) */
         fun onEditingChanged(editing: Boolean)
@@ -133,18 +133,28 @@ class PhoneBar @JvmOverloads constructor(
     private var suggestions: AddressSuggestions? = null
     private var inlineCompletion: InlineAddressCompletion? = null
 
-    /** The suggestions of the history follow the address typed, in the [view] above the bar */
+    /** The suggestions follow the address typed, in the [view] above the bar */
     fun setSuggestions(suggestions: AddressSuggestions, view: AddressSuggestionsView) {
         this.suggestions = suggestions
         inlineCompletion = InlineAddressCompletion(vb.etUrl, suggestions::inlineCompletion, suggestions::query)
         view.onOpen = ::openSuggestion
+        view.onFill = ::fillSuggestion
     }
 
-    /** Opens a suggestion of the history (a tapped row) */
-    private fun openSuggestion(url: String) {
+    /** Opens a suggestion (a tapped row): a page of the history, or a search */
+    private fun openSuggestion(row: AddressSuggestions.Row) {
         if (!editing) return
         stopEditing()
-        callback?.openUrl(url)
+        when (row) {
+            is AddressSuggestions.Row.Page -> callback?.openUrl(row.url)
+            is AddressSuggestions.Row.Search -> callback?.search(row.text)
+        }
+    }
+
+    /** Puts a suggested search into the field, with a space for the next word; the editing goes on */
+    private fun fillSuggestion(text: String) {
+        if (!editing) return
+        inlineCompletion?.replaceText("$text ")
     }
 
     private fun isHomePage(url: String) =

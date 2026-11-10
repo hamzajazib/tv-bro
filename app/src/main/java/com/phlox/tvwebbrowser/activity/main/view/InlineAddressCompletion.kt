@@ -102,6 +102,25 @@ class InlineAddressCompletion(
         field.removeCallbacks(apply)
     }
 
+    /**
+     * Puts the [text] into the field in place of what is there (a suggested search to go on with), the
+     * cursor after it; it is not completed
+     */
+    fun replaceText(text: String) {
+        field.removeCallbacks(apply)
+        pendingText = null
+        completion = null
+        applying = true
+        try {
+            field.setText(text)
+            field.setSelection(field.text.length)
+        } finally {
+            applying = false
+        }
+        addedAtEnd = false
+        if (active) onTyped(text)
+    }
+
     /** The url to open for the [text] the field is submitted with: that of the completion it shows, if any */
     fun urlFor(text: String): String? = completion?.takeIf { it.text == text }?.url
 }
