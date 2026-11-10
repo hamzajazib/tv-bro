@@ -14,6 +14,8 @@ class Config(val prefs: SharedPreferences, private val credentialsPrefs: SharedP
     companion object {
         const val SEARCH_ENGINE_URL_PREF_KEY = "search_engine_url"
         const val SEARCH_ENGINE_AS_HOME_PAGE_KEY = "search_engine_as_home_page"
+        const val SEARCH_SUGGESTIONS_KEY = "search_suggestions"
+        const val CUSTOM_SEARCH_SUGGEST_URL_KEY = "custom_search_suggest_url"
         const val HOME_PAGE_KEY = "home_page"
         const val DEFAULT_SITE_VIEW_KEY = "default_desktop_view"
         const val USER_AGENT_KEY = "user_agent"
@@ -79,6 +81,17 @@ class Config(val prefs: SharedPreferences, private val credentialsPrefs: SharedP
         val SearchEnginesURLs = listOf("https://www.google.com/search?q=[query]", "https://www.bing.com/search?q=[query]",
             "https://search.yahoo.com/search?p=[query]", "https://duckduckgo.com/?q=[query]",
             "https://yandex.com/search/?text=[query]", "https://www.startpage.com/sp/search?query=[query]", "")
+        /**
+         * Where each search engine gives the suggestions of a text ("[query]"), as OpenSearch suggestions:
+         * a JSON array of the text and the array of the suggestions
+         */
+        val SearchEnginesSuggestURLs = listOf(
+            "https://suggestqueries.google.com/complete/search?client=firefox&q=[query]",
+            "https://api.bing.com/osjson.aspx?query=[query]",
+            "https://ff.search.yahoo.com/gossip?output=fxjson&command=[query]",
+            "https://duckduckgo.com/ac/?q=[query]&type=list",
+            "https://suggest.yandex.com/suggest-ff.cgi?part=[query]",
+            "https://www.startpage.com/osuggestions?q=[query]", "")
         const val HOME_PAGE_URL = "https://tvbro.phlox.dev/appcontent/home/"
         //const val HOME_PAGE_URL = "http://10.0.2.2:5000/appcontent/home/"
     }
@@ -257,6 +270,26 @@ class Config(val prefs: SharedPreferences, private val credentialsPrefs: SharedP
         }
 
     var searchEngineURL = ObservableStringPreference(SearchEnginesURLs[0], SEARCH_ENGINE_URL_PREF_KEY)
+
+    /**
+     * The text typed into the address field is sent to the search engine, which suggests searches for it
+     * (never in incognito mode)
+     */
+    var searchSuggestions: Boolean
+        get() = prefs.getBoolean(SEARCH_SUGGESTIONS_KEY, true)
+        set(value) {
+            prefs.edit().putBoolean(SEARCH_SUGGESTIONS_KEY, value).apply()
+        }
+
+    /**
+     * Where the user's own search engine gives its suggestions, with "[query]" in place of the text; blank
+     * when it has none
+     */
+    var customSearchSuggestUrl: String
+        get() = prefs.getString(CUSTOM_SEARCH_SUGGEST_URL_KEY, "")!!
+        set(value) {
+            prefs.edit().putString(CUSTOM_SEARCH_SUGGEST_URL_KEY, value.trim()).apply()
+        }
 
     var allowAutoplayMedia: Boolean
         get() = prefs.getBoolean(ALLOW_AUTOPLAY_MEDIA, false)
