@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import com.phlox.tvwebbrowser.browser.ProxySetup
 import com.phlox.tvwebbrowser.browser.adblock.AppEngineAdBlocker
+import com.phlox.tvwebbrowser.browser.search.DefaultSearchEngine
 import com.phlox.tvwebbrowser.webengine.WebEngineFactory
 import com.phlox.tvwebbrowser.activity.main.MainActivity
 import com.phlox.tvwebbrowser.singleton.FaviconsPool
@@ -92,7 +93,9 @@ class TVBro : Application(), Application.ActivityLifecycleCallbacks {
             return
         }
 
-        val maxThreadsInOfflineJobsPool = Runtime.getRuntime().availableProcessors()
+        DefaultSearchEngine.applyOnce(AppContext.provideConfig(), this)
+
+        val maxThreadsInOfflineJobsPool =Runtime.getRuntime().availableProcessors()
         threadPool = ThreadPoolExecutor(0, maxThreadsInOfflineJobsPool, 20,
                 TimeUnit.SECONDS, ArrayBlockingQueue(maxThreadsInOfflineJobsPool))
 

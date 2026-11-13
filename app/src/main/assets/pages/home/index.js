@@ -5,6 +5,8 @@ var searchEngineUrlMap = {
         "ddg": "https://duckduckgo.com/?q=[query]",
         "yandex": "https://yandex.com/search/?text=[query]",
         "startpage": "https://www.startpage.com/sp/search?query=[query]",
+        //the app sends the address it searches with (with the partner ID of Qwant) when the engine is chosen
+        "qwant": "https://www.qwant.com/?q=[query]&t=web",
         "custom": ""
     };
 var recommendationsToDisplay = [];

@@ -376,6 +376,31 @@ class BrowserControllerEventsTest {
     }
 
     @Test
+    fun qwantGetsTheMobileViewUntilTheUserChoosesAnother() {
+        val tab = open("https://www.qwant.com/?q=tv")
+        assertFalse(tab.fakeEngine.desktopView)
+        assertFalse(state.desktopView)
+        assertTrue(state.siteViewIsDefault)
+        awaitWrite(controller.setSiteView(tab, desktop = true))
+        assertTrue(tab.fakeEngine.desktopView)
+        assertFalse(state.siteViewIsDefault)
+        assertEquals(true, runBlocking { db.hostsDao().findByHostName("www.qwant.com") }!!.desktopView)
+        //back to the view of the list: no setting of its own
+        awaitWrite(controller.setSiteView(tab, desktop = false))
+        assertFalse(tab.fakeEngine.desktopView)
+        assertTrue(state.siteViewIsDefault)
+    }
+
+    @Test
+    fun theListOfSiteViewsTakesSubdomains() {
+        assertEquals(false, SiteViewDefaults.desktopView("qwant.com"))
+        assertEquals(false, SiteViewDefaults.desktopView("WWW.Qwant.com."))
+        assertNull(SiteViewDefaults.desktopView("notqwant.com"))
+        assertNull(SiteViewDefaults.desktopView("qwant.com.example.org"))
+        assertNull(SiteViewDefaults.desktopView("com"))
+    }
+
+    @Test
     fun defaultSiteViewSettingWinsOverTheInterface() {
         val tab = open("https://a.com/")
         assertTrue(tab.fakeEngine.desktopView)

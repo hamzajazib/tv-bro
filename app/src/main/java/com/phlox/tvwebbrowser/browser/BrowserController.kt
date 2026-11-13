@@ -506,11 +506,14 @@ class BrowserController : ActiveModel() {
      */
     fun isDesktopView(url: String): Boolean {
         val host = hostNameOf(url) ?: return defaultDesktopView
-        return hostConfigs.desktopViewSetting(host) ?: defaultDesktopView
+        return hostConfigs.desktopViewSetting(host) ?: defaultDesktopViewOf(host)
     }
 
     /** The site view of sites without their own: the setting, or the one of the interface */
     val defaultDesktopView: Boolean get() = config.defaultDesktopView ?: interfaceDesktopView
+
+    /** The view of the [host] while it has no setting of its own: that of [SiteViewDefaults], else the default */
+    fun defaultDesktopViewOf(host: String): Boolean = SiteViewDefaults.desktopView(host) ?: defaultDesktopView
 
     /**
      * Whether the videos that pages of the [host] put in fullscreen go to the built-in player: its own setting
@@ -564,7 +567,7 @@ class BrowserController : ActiveModel() {
      */
     fun setSiteView(tab: BrowserTab, desktop: Boolean): Job? {
         val host = hostNameOf(tab) ?: return null
-        val setting = if (desktop == defaultDesktopView) null else desktop
+        val setting = if (desktop == defaultDesktopViewOf(host)) null else desktop
         //the in-memory setting changes right away, the write is not cancelled with the model
         val write = TVBro.container.appScope.launch { hostConfigs.setDesktopView(host, setting) }
         if (applySiteView(tab) && tab == currentTab.value) {

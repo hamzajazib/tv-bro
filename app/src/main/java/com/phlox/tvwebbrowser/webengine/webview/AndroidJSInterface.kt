@@ -7,6 +7,7 @@ import com.phlox.tvwebbrowser.TVBro
 import com.phlox.tvwebbrowser.utils.DownloadUtils
 import com.phlox.tvwebbrowser.webengine.DownloadRequest
 import org.json.JSONArray
+import org.json.JSONObject
 
 
 class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
@@ -31,7 +32,15 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     @JavascriptInterface
     fun setSearchEngine(engine: String, customSearchEngineURL: String) {
         if (!isHomePage()) return
-        AppContext.provideConfig().searchEngineURL.value = customSearchEngineURL
+        val cfg = AppContext.provideConfig()
+        cfg.setSearchEngine(Config.searchEngineUrlOfHomePage(engine, customSearchEngineURL))
+        //the page searches with the address it keeps: the one of the app has the partner ID of Qwant
+        val callback = webEngine.callback ?: return
+        val name = JSONObject.quote(cfg.guessSearchEngineName())
+        val url = JSONObject.quote(cfg.searchEngineURL.value)
+        callback.getActivity().runOnUiThread {
+            if (isHomePage()) webEngine.evaluateJavascript("applySearchEngine($name, $url)")
+        }
     }
 
     @JavascriptInterface

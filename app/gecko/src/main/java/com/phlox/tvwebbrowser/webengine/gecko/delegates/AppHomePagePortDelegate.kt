@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.phlox.tvwebbrowser.AppContext
+import com.phlox.tvwebbrowser.Config
 import com.phlox.tvwebbrowser.singleton.FaviconsPool
 import com.phlox.tvwebbrowser.utils.Utils
 import com.phlox.tvwebbrowser.webengine.gecko.GeckoWebEngine
@@ -53,7 +54,11 @@ class AppHomePagePortDelegate(val port: WebExtension.Port, val webEngine: GeckoW
                     val data = msgJson.getJSONObject("data")
                     val engine = data.getString("engine")
                     val customSearchEngineURL = data.getString("customSearchEngineURL")
-                    AppContext.provideConfig().searchEngineURL.value = customSearchEngineURL
+                    val cfg = AppContext.provideConfig()
+                    cfg.setSearchEngine(Config.searchEngineUrlOfHomePage(engine, customSearchEngineURL))
+                    //the page searches with the address it keeps: the one of the app has the partner ID of Qwant
+                    port.postMessage(pageCall("applySearchEngine",
+                        JSONObject().put("engine", cfg.guessSearchEngineName()).put("url", cfg.searchEngineURL.value)))
                 }
                 "onEditBookmark" -> {
                     val index = msgJson.getInt("data")
